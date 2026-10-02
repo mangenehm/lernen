@@ -16,11 +16,11 @@
     },
     "karte-wache.svg": {
       "groesse": "16:10",
-      "prompt": "Game card picture. A meerkat standing guard upright on a small sand hill, looking out alertly, with four little white clouds in the sky each carrying one math symbol: plus, minus, a dot for times, a colon for divide."
+      "prompt": "Game card picture. A meerkat standing upright on a small sand hill at sunrise, stretching and yawning next to its burrow, with four little white clouds in the sky each carrying one math symbol: plus, minus, a dot for times, a colon for divide."
     },
     "ende.svg": {
       "groesse": "16:7",
-      "prompt": "Celebration scene at sunset in the savanna. A happy group of five meerkats on a sand dune, the middle one wearing a red party hat with a golden rosette ribbon above it, confetti and small stars in a purple-to-orange sky, the sun setting behind the dunes."
+      "prompt": "Celebration scene on a bright morning in the savanna. A happy, wide-awake group of five meerkats on a sand dune, the middle one wearing a red party hat with a golden rosette ribbon above it, confetti and small stars in a clear light-blue sky, the sun standing high."
     }
   }
 }
