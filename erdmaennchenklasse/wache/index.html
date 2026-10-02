@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Erdmännchen-Wache</title>
+  <title>Guten Morgen, Erdmännchen!</title>
   <link rel="stylesheet" href="../../assets/base.css" />
   <style>
     :root {
@@ -109,9 +109,9 @@
       overflow: hidden; border: var(--line); box-shadow: var(--offset);
       background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 70%);
     }
-    .sunset {
-      position: absolute; inset: 0; opacity: 0; pointer-events: none;
-      background: linear-gradient(180deg, #5b4b8a 0%, #f2826b 55%, #ffd29a 80%);
+    .dawn {
+      position: absolute; inset: 0; opacity: 1; pointer-events: none;
+      background: linear-gradient(180deg, #8e86c4 0%, #f4a98f 50%, #ffdcaa 80%);
     }
     .sun {
       position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
@@ -159,7 +159,7 @@
     .schild > span { display: inline-flex; align-items: center; gap: 6px; }
     .schild svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* Sprechblase am Wach-Erdmännchen */
+    /* Sprechblase am Weck-Erdmännchen */
     .banner {
       position: absolute; right: 92px; bottom: 112px; z-index: 4; max-width: 46%;
       background: var(--paper-2); border: var(--line); border-radius: 12px; padding: 6px 12px;
@@ -265,8 +265,8 @@
     <div class="hero">
       <div id="heroMk"></div>
       <div>
-        <h1>Erdmännchen-Wache</h1>
-        <div class="muted">Rechnen mit der Erdmännchenklasse – jede richtige Antwort weckt ein Erdmännchen!</div>
+        <h1>Guten Morgen, Erdmännchen!</h1>
+        <div class="muted">Die Sonne geht auf, aber die Erdmännchen schlafen noch. Jede richtige Antwort weckt eins!</div>
       </div>
     </div>
 
@@ -290,7 +290,7 @@
     </div>
 
     <div class="card">
-      <h2>Wie lange hält die Wache?</h2>
+      <h2>Wie lange dauert der Morgen?</h2>
       <div class="segmente" id="durations"></div>
     </div>
 
@@ -317,13 +317,13 @@
   <!-- ================= Spiel ================= -->
   <section id="game" class="hidden">
     <div class="topbar">
-      <span class="head">Erdmännchen-Wache</span>
+      <span class="head">Guten Morgen, Erdmännchen!</span>
       <span class="spacer"></span>
       <button class="btn-text" id="stopBtn" type="button">Beenden</button>
     </div>
 
     <div class="scene" id="scene">
-      <div class="sunset" id="sunset"></div>
+      <div class="dawn" id="dawn"></div>
       <div class="sun" id="sun"></div>
       <svg class="dunes" viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true">
         <path d="M-5 45 Q70 10 150 40 T300 30 T405 38 V105 H-5 Z" fill="#ecc98a" stroke="#3b2614" stroke-width="2" vector-effect="non-scaling-stroke"/>
@@ -356,7 +356,7 @@
   <section id="end" class="hidden">
     <div class="card result">
       <img class="ende-bild" src="../../assets/art/ende.svg" width="600" height="260" alt="" />
-      <div class="lead">Die Sonne ist untergegangen. Du hast</div>
+      <div class="lead">Die Sonne steht hoch am Himmel. Du hast</div>
       <div class="bignum" id="endCount">0</div>
       <div class="unter">Erdmännchen geweckt!</div>
       <div class="record" id="endRecord"></div>
@@ -631,7 +631,7 @@
     ops: $('ops'), rows: $('rows'), rowsCard: $('rowsCard'), rowsAll: $('rowsAll'), durations: $('durations'),
     optSpeak: $('optSpeak'), optListen: $('optListen'), noSR: $('noSR'), startBtn: $('startBtn'), setupWarn: $('setupWarn'),
     timeLeft: $('timeLeft'), score: $('score'), stopBtn: $('stopBtn'),
-    sun: $('sun'), sunset: $('sunset'), colony: $('colony'), guard: $('guard'), banner: $('banner'),
+    sun: $('sun'), dawn: $('dawn'), colony: $('colony'), guard: $('guard'), banner: $('banner'),
     expr: $('expr'), mic: $('mic'), statusText: $('statusText'), heard: $('heard'), feedback: $('feedback'),
     skipBtn: $('skipBtn'), padToggle: $('padToggle'), keypad: $('keypad'),
     endCount: $('endCount'), endRecord: $('endRecord'), endColony: $('endColony'),
@@ -823,12 +823,13 @@
     const p = 1 - left / state.duration;
     const sec = Math.ceil(left / 1000);
     els.timeLeft.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
-    els.sun.style.left = (8 + p * 84) + '%';
-    els.sun.style.top = (72 - Math.sin(Math.PI * p) * 55 + (p > .5 ? (p - .5) * 30 : 0)) + '%';
-    els.sunset.style.opacity = Math.max(0, (p - .6) / .4).toFixed(3);
+    // Sonnenaufgang: die Sonne steigt vom Horizont bis hoch an den Himmel, das Morgenrot verblasst.
+    els.sun.style.left = (8 + p * 50) + '%';
+    els.sun.style.top = (72 - Math.sin(Math.PI / 2 * p) * 56) + '%';
+    els.dawn.style.opacity = Math.max(0, 1 - p / .45).toFixed(3);
     if (left <= 0 && !state.timeUp) {
       state.timeUp = true;
-      els.banner.textContent = 'Die Sonne geht unter – letzte Aufgabe!';
+      els.banner.textContent = 'Die Sonne steht hoch – letzte Aufgabe!';
       els.banner.classList.remove('hidden');
       later(endGame, 15000);   // falls keine Antwort mehr kommt
     }

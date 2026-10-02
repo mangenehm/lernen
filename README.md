@@ -6,7 +6,7 @@ Die Startseite ist eine gemeinsame Übersicht aller Spiele, gruppiert nach Klass
 
 | Klasse | Spiel | Pfad | Beschreibung |
 |---|---|---|---|
-| Erdmännchenklasse | Erdmännchen-Wache | `/erdmaennchenklasse/wache/` | Plus/Minus bis 100, Einmaleins und Einsdurcheins – Aufgaben werden vorgelesen und per Sprache beantwortet. |
+| Erdmännchenklasse | Guten Morgen, Erdmännchen! | `/erdmaennchenklasse/wache/` | Plus/Minus bis 100, Einmaleins und Einsdurcheins – Aufgaben werden vorgelesen und per Sprache beantwortet. |
 | Hasenklasse | – | – | Noch keine Spiele. |
 
 ## Neues Spiel hinzufügen
