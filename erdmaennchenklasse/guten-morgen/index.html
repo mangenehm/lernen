@@ -83,6 +83,7 @@
     .switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; font-weight: 700; }
     .switch + .switch { border-top: 2px dashed var(--rule); }
     .switch small { display: block; color: var(--ink-soft); font-weight: 400; }
+    .switch .exp { font-style: normal; font-weight: 400; font-size: .85em; color: var(--ink-soft); }
     .switch input {
       appearance: none; -webkit-appearance: none; position: relative; flex: none; margin: 0; cursor: pointer;
       width: 54px; height: 32px; border: var(--line); border-radius: 999px; background: var(--paper-3);
@@ -327,8 +328,8 @@
         <input type="checkbox" id="optSpeak" checked>
       </label>
       <label class="switch">
-        <span>Antwort sprechen<small>Das Mikrofon hört zu. Tippen geht immer auch.</small></span>
-        <input type="checkbox" id="optListen" checked>
+        <span>Antwort sprechen <em class="exp">(experimentell)</em><small>Das Mikrofon hört zu. Tippen geht immer auch.</small></span>
+        <input type="checkbox" id="optListen">
       </label>
       <div class="note hidden" id="noSR">
         Dieser Browser kann keine Sprache erkennen – es wird mit dem Ziffernblock gespielt.
@@ -721,7 +722,7 @@
   };
   const DURATIONS = [1, 2, 3, 5, 10];
   const state = {
-    phase: 'setup', voiceOut: true, voiceIn: true, listening: false, accepting: false,
+    phase: 'setup', voiceOut: true, voiceIn: false, listening: false, accepting: false,
     task: null, attempts: 0, input: '', solved: 0, failed: 0, streak: 0, taskNo: 0,
     retry: [], missed: new Map(), colonyList: [], endAt: 0, duration: 0, timeUp: false,
     timers: [], raf: 0, settings: null
@@ -753,12 +754,12 @@
     return { ops, rows, duration: dur, speak: els.optSpeak.checked, listen: els.optListen.checked };
   }
   function applySettings(s) {
-    if (!s) s = { ops: ['add', 'sub'], rows: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], duration: 2, speak: true, listen: true };
+    if (!s) s = { ops: ['add', 'sub'], rows: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], duration: 2, speak: true, listen: false };
     els.ops.querySelectorAll('input').forEach(i => { i.checked = s.ops.includes(i.value); });
     els.rows.querySelectorAll('input').forEach(i => { i.checked = s.rows.includes(+i.value); });
     els.durations.querySelectorAll('input').forEach(i => { i.checked = +i.value === s.duration; });
     if (!els.optSpeak.disabled) els.optSpeak.checked = s.speak !== false;
-    if (!els.optListen.disabled) els.optListen.checked = s.listen !== false;
+    if (!els.optListen.disabled) els.optListen.checked = s.listen === true;
   }
   function updateSetupUI() {
     const s = readSettings();
