@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 120 120" role="img" aria-label="Wappen der Hasenklasse">
+<title>Wappen der Hasenklasse</title>
+<defs><clipPath id="r"><circle cx="60" cy="60" r="52"/></clipPath></defs>
+<circle cx="60" cy="60" r="56" fill="#fcebf2" stroke="#3b2614" stroke-width="3"/>
+<circle cx="60" cy="60" r="49" fill="none" stroke="#d9568a" stroke-width="4" stroke-dasharray="2 7" stroke-linecap="round"/>
+<g clip-path="url(#r)" stroke="#3b2614" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+<path d="M0 96 Q60 82 120 96 V120 H0 Z" fill="#a9c98f"/>
+<path d="M30 120 Q30 84 60 82 Q90 84 90 120 Z" fill="#e9ddd0"/>
+<path d="M47 52 C40 30 38 10 46 8 C54 6 56 30 55 50 Z" fill="#e9ddd0"/>
+<path d="M47 46 C43 30 43 16 46 14 C50 13 51 30 51 45 Z" fill="#f2a7c3" stroke="none"/>
+<path d="M65 50 C66 30 70 8 78 10 C86 12 80 34 73 54 Z" fill="#e9ddd0"/>
+<path d="M68 46 C70 30 73 17 77 17 C80 18 77 32 71 48 Z" fill="#f2a7c3" stroke="none"/>
+<ellipse cx="60" cy="66" rx="22" ry="20" fill="#e9ddd0"/>
+<circle cx="52" cy="62" r="3" fill="#1e120a" stroke="none"/><circle cx="68" cy="62" r="3" fill="#1e120a" stroke="none"/>
+<circle cx="53" cy="61" r="1" fill="#fff" stroke="none"/><circle cx="69" cy="61" r="1" fill="#fff" stroke="none"/>
+<circle cx="46" cy="70" r="3" fill="#f2a7c3" opacity=".7" stroke="none"/><circle cx="74" cy="70" r="3" fill="#f2a7c3" opacity=".7" stroke="none"/>
+<path d="M57 69 Q60 67 63 69 Q61.5 72 60 72 Q58.5 72 57 69 Z" fill="#d9568a" stroke-width="1.5"/>
+<path d="M60 72 v3 M56 76 Q60 79 64 76" fill="none" stroke-width="1.8"/>
+<g transform="translate(76 92) rotate(30)"><path d="M-5 0 L5 0 L0 26 Z" fill="#e07a1f"/><path d="M-3 7 h4 M-2 13 h3" stroke-width="1.5"/><path d="M0 0 l-6 -9 M0 0 l0 -11 M0 0 l6 -9" stroke="#4f8a3c" stroke-width="3"/></g>
+</g>
+</svg>

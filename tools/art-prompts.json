@@ -1,0 +1,26 @@
+{
+  "_hinweis": "Recraft-Prompts für die Grafiken unter assets/art/. Die aktuellen Dateien sind handgezeichnete SVG-Platzhalter; ein Recraft-Ergebnis (Modell recraftv4_1_vector, SVG) ersetzt die Datei gleichen Namens 1:1.",
+  "stil": "Children's picture-book vector illustration. Bold dark brown ink outlines (#3b2614), flat colors, limited warm palette: sand #c8965f, cream #efd6ab, orange #e07a1f, soft pink #d9568a, sage green #8fae7a, pale sky blue #cfe6ef. Simple, calm, friendly. No text, no letters, no numbers.",
+  "motive": {
+    "header.svg": {
+      "groesse": "2:1",
+      "prompt": "Wide banner. A sunny savanna with soft sand dunes, an acacia tree and a few cacti; a family of three friendly meerkats standing upright on a dune, the middle one wearing a small red party hat, next to an open school exercise notebook with grid paper and a pencil. Lots of empty sky."
+    },
+    "klasse-erdmaennchen.svg": {
+      "groesse": "1:1",
+      "prompt": "Round badge emblem. Head and shoulders of a cute meerkat wearing a small red party hat, inside a circular cream badge with a thin dotted orange ring. Transparent background."
+    },
+    "klasse-hasen.svg": {
+      "groesse": "1:1",
+      "prompt": "Round badge emblem. Head and shoulders of a cute light grey bunny holding a small carrot, inside a circular pale pink badge with a thin dotted pink ring. Transparent background."
+    },
+    "karte-wache.svg": {
+      "groesse": "16:10",
+      "prompt": "Game card picture. A meerkat standing guard upright on a small sand hill, looking out alertly, with four little white clouds in the sky each carrying one math symbol: plus, minus, a dot for times, a colon for divide."
+    },
+    "ende.svg": {
+      "groesse": "16:7",
+      "prompt": "Celebration scene at sunset in the savanna. A happy group of five meerkats on a sand dune, the middle one wearing a red party hat with a golden rosette ribbon above it, confetti and small stars in a purple-to-orange sky, the sun setting behind the dunes."
+    }
+  }
+}
