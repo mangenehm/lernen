@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lernspiele</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: #3b2614;
+      font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: linear-gradient(180deg, #fff3dc 0%, #fbe3b8 100%);
+    }
+    main { max-width: 760px; margin: 0 auto; padding: 32px 16px; }
+    h1 { margin: 0 0 4px; font-size: clamp(1.8rem, 7vw, 2.6rem); }
+    .sub { color: #8a6a48; margin: 0 0 24px; }
+    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+    a.card {
+      display: flex; gap: 14px; align-items: center; text-decoration: none; color: inherit;
+      background: #fffaf0; border: 2px solid #ead7b5; border-radius: 20px; padding: 16px;
+      box-shadow: 0 8px 24px rgba(90, 58, 30, .16); transition: transform .1s ease;
+    }
+    a.card:hover, a.card:focus-visible { transform: translateY(-2px); border-color: #f28c28; outline: none; }
+    a.card svg { width: 54px; height: 92px; flex: none; }
+    a.card h2 { margin: 0 0 4px; font-size: 1.25rem; }
+    a.card p { margin: 0; color: #8a6a48; font-size: .95rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Lernspiele</h1>
+  <p class="sub">Üben macht mehr Spaß, wenn Erdmännchen zuschauen.</p>
+  <div class="grid">
+    <a class="card" href="erdmaennchen/">
+      <svg viewBox="0 -12 60 112" aria-hidden="true">
+        <path d="M42 82 Q57 80 54 98" stroke="#8a5f36" stroke-width="5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="30" cy="66" rx="15" ry="27" fill="#c8965f"/>
+        <ellipse cx="30" cy="70" rx="8.5" ry="19" fill="#efd6ab"/>
+        <ellipse cx="22" cy="52" rx="4" ry="9" transform="rotate(28 22 52)" fill="#b8834f"/>
+        <ellipse cx="38" cy="52" rx="4" ry="9" transform="rotate(-28 38 52)" fill="#b8834f"/>
+        <ellipse cx="22" cy="94" rx="7" ry="3.5" fill="#8a5f36"/>
+        <ellipse cx="38" cy="94" rx="7" ry="3.5" fill="#8a5f36"/>
+        <circle cx="17.5" cy="22" r="3.4" fill="#5a3d22"/>
+        <circle cx="42.5" cy="22" r="3.4" fill="#5a3d22"/>
+        <ellipse cx="30" cy="26" rx="13" ry="14" fill="#c8965f"/>
+        <ellipse cx="30" cy="34" rx="7.5" ry="6.5" fill="#e6c594"/>
+        <ellipse cx="24" cy="24" rx="4" ry="5" fill="#3b2614"/>
+        <ellipse cx="36" cy="24" rx="4" ry="5" fill="#3b2614"/>
+        <circle cx="24.7" cy="22.8" r="1.2" fill="#fff"/>
+        <circle cx="36.7" cy="22.8" r="1.2" fill="#fff"/>
+        <ellipse cx="30" cy="32.5" rx="2.6" ry="1.9" fill="#2a1a0d"/>
+        <path d="M27 37 Q30 39.5 33 37" stroke="#5a3d22" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        <path d="M20 15 L30 -9 L40 15 Z" fill="#e4572e"/><circle cx="30" cy="-9" r="3" fill="#ffd23f"/>
+      </svg>
+      <div>
+        <h2>Erdmännchen-Wache</h2>
+        <p>Plus und Minus bis 100, Einmaleins und Einsdurcheins – mit Vorlesen und Spracheingabe.</p>
+      </div>
+    </a>
+  </div>
+</main>
+</body>
+</html>
