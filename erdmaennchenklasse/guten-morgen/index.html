@@ -1,0 +1,1154 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Guten Morgen, Erdmännchen!</title>
+  <link rel="stylesheet" href="../../assets/base.css" />
+  <style>
+    :root {
+      --sky-1: #9fd3ee;
+      --sky-2: #d8f0fb;
+      --sand-3: #c99a52;
+      --soft: #fde3c6;
+      --ok: var(--green);
+      --bad: var(--red);
+    }
+    main { max-width: 760px; margin: 0 auto; padding: 16px 16px 32px; }
+    h1 { margin: 0; font-size: clamp(1.8rem, 6.5vw, 2.6rem); font-weight: 700; }
+    h2 { margin: 0 0 12px; font-size: 1.2rem; }
+    .hidden { display: none !important; }
+    .muted { color: var(--ink-soft); }
+
+    .card {
+      background: var(--paper-2); border: var(--line); border-radius: var(--radius);
+      padding: 16px; box-shadow: var(--offset); margin-bottom: 16px;
+    }
+    .btn-big { margin-top: 6px; }
+
+    /* ---------- Start ---------- */
+    .hero { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; }
+    .hero svg { width: 70px; height: 110px; flex: none; }
+    .hero .muted { font-weight: 700; }
+
+    /* Rechenarten als Kacheln */
+    .tiles { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    .tile, .feld, .seg { position: relative; }
+    .tile input, .feld input, .seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; z-index: 1; }
+    .tile .face {
+      display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px 10px;
+      background: var(--paper-2); border: var(--line); border-radius: var(--radius-s); box-shadow: var(--offset);
+      font-weight: 800; user-select: none; transition: transform .06s ease, box-shadow .06s ease;
+    }
+    .tile .face b { font-family: var(--font-head); font-weight: 700; font-size: 2.6rem; line-height: 1; }
+    .tile .face b.punkt { transform: scale(2); }
+    .tile input:checked + .face { background: var(--soft); color: var(--orange-dark); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .tile input:checked + .face b { color: var(--orange); }
+    .tile input:focus-visible + .face, .feld input:focus-visible + span, .seg input:focus-visible + span { outline: 3px solid var(--orange); outline-offset: 2px; }
+
+    /* Einmaleins-Reihen als Rechenkästchen */
+    .rows-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+    .raster {
+      display: grid; grid-template-columns: repeat(5, 1fr); max-width: 340px;
+      border: var(--line); border-radius: var(--radius-s); overflow: hidden; background: var(--rule); gap: 2px;
+    }
+    .feld span {
+      display: grid; place-items: center; aspect-ratio: 1; background: var(--paper-2);
+      font-family: var(--font-head); font-weight: 600; font-size: 1.45rem; user-select: none;
+    }
+    .feld input:checked + span {
+      color: var(--orange-dark);
+      background: radial-gradient(circle, var(--soft) 0 52%, transparent 54%), var(--paper-2);
+    }
+    .feld input:checked + span::after {
+      content: ""; position: absolute; inset: 14%; border: 2.5px solid var(--orange); border-radius: 50%;
+    }
+
+    /* Dauer als Segment-Leiste */
+    .segmente {
+      display: flex; border: var(--line); border-radius: var(--radius-s); overflow: hidden;
+      box-shadow: var(--offset); background: var(--paper-2);
+    }
+    .seg { flex: 1; }
+    .seg + .seg span { border-left: var(--line); }
+    .seg span {
+      display: flex; flex-direction: column; align-items: center; padding: 8px 2px;
+      font-family: var(--font-head); font-weight: 600; font-size: 1.35rem; line-height: 1.1; user-select: none;
+    }
+    .seg small { font-family: var(--font-text); font-size: .78rem; font-weight: 700; color: var(--ink-soft); }
+    .seg input:checked + span { background: var(--orange); color: #fff; }
+    .seg input:checked + span small { color: #fff; }
+
+    /* Sprache: gezeichnete Schalter */
+    .switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; font-weight: 700; }
+    .switch + .switch { border-top: 2px dashed var(--rule); }
+    .switch small { display: block; color: var(--ink-soft); font-weight: 400; }
+    .switch input {
+      appearance: none; -webkit-appearance: none; position: relative; flex: none; margin: 0; cursor: pointer;
+      width: 54px; height: 32px; border: var(--line); border-radius: 999px; background: var(--paper-3);
+      box-shadow: 2px 2px 0 var(--ink); transition: background .15s ease;
+    }
+    .switch input::before {
+      content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--paper-2); border: var(--line); transition: left .15s ease;
+    }
+    .switch input:checked { background: var(--green); }
+    .switch input:checked::before { left: 25px; }
+    .switch input:disabled { opacity: .45; cursor: not-allowed; }
+    .note { margin-top: 10px; padding: 10px 12px; border-radius: var(--radius-s); background: var(--paper-3); border: 2px dashed var(--rule); font-size: .92rem; }
+    .warn { color: var(--bad); font-weight: 800; min-height: 1.2em; margin: 10px 0 0; }
+
+    /* ---------- Spiel ---------- */
+    .topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .topbar .head { font-size: 1.15rem; color: var(--ink-soft); }
+    .spacer { flex: 1; }
+
+    .scene {
+      position: relative; height: clamp(190px, 34vh, 280px); border-radius: var(--radius);
+      overflow: hidden; border: var(--line); box-shadow: var(--offset);
+      background: linear-gradient(180deg, var(--sky-1) 0%, var(--sky-2) 70%);
+    }
+    .dawn {
+      position: absolute; inset: 0; opacity: 1; pointer-events: none;
+      background: linear-gradient(180deg, #8e86c4 0%, #f4a98f 50%, #ffdcaa 80%);
+    }
+    .sun {
+      position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%;
+      background: #ffd23f; border: var(--line); left: 8%; top: 70%;
+    }
+    .dunes { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 55%; }
+    .colony {
+      position: absolute; left: 8px; right: 110px; bottom: 6px; top: 30%;
+      display: flex; flex-wrap: wrap-reverse; align-content: flex-start; align-items: flex-end;
+      gap: 0 2px;
+    }
+    .colony .mk { width: 30px; height: 50px; flex: none; animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; transform-origin: 50% 100%; }
+    .colony.small .mk { width: 22px; height: 37px; }
+    .colony.tiny .mk { width: 16px; height: 27px; }
+    .colony .mk svg { width: 100%; height: 100%; display: block; }
+    @keyframes pop { from { transform: translateY(60%) scaleY(.2); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    .guard { position: absolute; right: 12px; bottom: 8px; width: 80px; height: 132px; transform-origin: 50% 100%; z-index: 2; }
+    .guard svg { width: 100%; height: 100%; display: block; }
+    .guard.jump { animation: jump .55s ease; }
+    .guard.shake { animation: shake .45s ease; }
+    .guard.listen { animation: bob 1.2s ease-in-out infinite; }
+    @keyframes jump { 0%,100% { transform: none; } 40% { transform: translateY(-26px) rotate(-4deg); } 70% { transform: translateY(0) scaleY(.92); } }
+    @keyframes shake { 0%,100% { transform: none; } 20% { transform: rotate(-8deg); } 40% { transform: rotate(7deg); } 60% { transform: rotate(-5deg); } 80% { transform: rotate(3deg); } }
+    @keyframes bob { 0%,100% { transform: none; } 50% { transform: translateY(-3px) rotate(2deg); } }
+    .mound {
+      position: absolute; right: -4px; bottom: -4px; width: 134px; height: 30px; border-radius: 50% 50% 0 0;
+      background: var(--sand-3); border: var(--line);
+    }
+
+    /* Holzschild mit Zeit und Punkten */
+    .schild {
+      position: absolute; left: 10px; top: 10px; z-index: 3; display: flex; gap: 16px; align-items: center;
+      padding: 5px 16px; border: var(--line); border-radius: 8px; box-shadow: 2px 2px 0 var(--ink);
+      background: repeating-linear-gradient(176deg, transparent 0 7px, rgba(59, 38, 20, .16) 7px 9px), var(--wood);
+      color: #fff7e6; font-family: var(--font-head); font-weight: 600; font-size: 1.3rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .schild::before, .schild::after {
+      content: ""; position: absolute; top: 50%; width: 5px; height: 5px; margin-top: -2.5px; border-radius: 50%;
+      background: var(--ink);
+    }
+    .schild::before { left: 5px; }
+    .schild::after { right: 5px; }
+    .schild > span { display: inline-flex; align-items: center; gap: 6px; }
+    .schild svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* Sprechblase am Weck-Erdmännchen */
+    .banner {
+      position: absolute; right: 92px; bottom: 112px; z-index: 4; max-width: 46%;
+      background: var(--paper-2); border: var(--line); border-radius: 12px; padding: 6px 12px;
+      font-family: var(--font-head); font-weight: 600; font-size: .98rem; line-height: 1.25;
+    }
+    .banner::after {
+      content: ""; position: absolute; right: -9px; bottom: 10px; width: 14px; height: 14px;
+      background: var(--paper-2); border-top: var(--line); border-right: var(--line);
+      transform: rotate(45deg) skew(12deg, 12deg);
+    }
+
+    .task { text-align: center; padding: 14px 12px 14px; margin-top: 12px; }
+    .expr {
+      font-family: var(--font-head); font-weight: 600;
+      font-size: clamp(1.8rem, 9.5vw, 4.6rem); line-height: 1.1;
+      font-variant-numeric: tabular-nums; white-space: nowrap;
+    }
+    .expr .ans {   /* Ergebnisfeld als Heftkästchen */
+      display: inline-block; min-width: 1.6em; padding: 0 .15em; color: var(--orange-dark);
+      border-bottom: 4px solid var(--ink); border-radius: 6px 6px 0 0;
+      background:
+        linear-gradient(var(--grid) 2px, transparent 2px) 0 0 / .5em .5em,
+        linear-gradient(90deg, var(--grid) 2px, transparent 2px) 0 0 / .5em .5em;
+    }
+    .expr .ans.ok { color: var(--ok); border-color: var(--ok); }
+    .expr .ans.bad { color: var(--bad); border-color: var(--bad); }
+    .status { margin-top: 10px; display: grid; gap: 8px; justify-items: center; font-weight: 700; color: var(--ink-soft); }
+    .status #statusText { min-height: 1.4em; }
+    /* Schalter für Vorlesen und Mikrofon, auch während des Spiels */
+    .toggles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .tgl {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px;
+      background: var(--soft); color: var(--ink); border: var(--line); box-shadow: 2px 2px 0 var(--ink);
+      font: inherit; font-weight: 800; font-size: .95rem; cursor: pointer; touch-action: manipulation;
+    }
+    .tgl svg { width: 20px; height: 20px; flex: none; fill: currentColor; }
+    .tgl:active { transform: translate(2px, 2px); box-shadow: none; }
+    .tgl[aria-pressed="false"] { background: var(--paper-3); color: var(--ink-soft); border-style: dashed; box-shadow: none; }
+    .tgl:disabled { opacity: .45; cursor: not-allowed; }
+    .tgl.on { background: var(--bad); color: #fff; animation: pulse 1.2s ease-out infinite; }
+    .tgl.speak { background: #4aa3df; color: #fff; }
+    @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(200, 67, 59, .5); } 100% { box-shadow: 0 0 0 16px rgba(200, 67, 59, 0); } }
+    .heard { font-size: .95rem; color: var(--ink-soft); min-height: 1.3em; margin-top: 4px; }
+    .heard:empty { display: none; }   /* nur Platz belegen, wenn etwas gehört wurde */
+    .feedback { font-family: var(--font-head); font-weight: 600; font-size: 1.4rem; line-height: 1.25; min-height: 1.25em; margin: 2px 0 6px; }
+    .feedback.ok { color: var(--ok); }
+    .feedback.bad { color: var(--bad); }
+
+    .actions { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 360px; margin: 12px auto 4px; }
+    .keypad button {
+      border: var(--line); background: var(--paper-2); border-radius: var(--radius-s); padding: 12px 0;
+      font-family: var(--font-head); font-weight: 600; font-size: 1.8rem; box-shadow: var(--offset);
+      touch-action: manipulation;
+    }
+    .keypad button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .keypad .ok { background: var(--ok); color: #fff; }
+
+    /* ---------- Ende ---------- */
+    .result { text-align: center; }
+    .ende-bild { display: block; width: 100%; height: auto; border-radius: var(--radius-s); margin-bottom: 14px; }
+    .result .lead { font-weight: 800; color: var(--ink-soft); }
+    .bignum { font-family: var(--font-head); font-weight: 700; font-size: clamp(3.5rem, 18vw, 6rem); line-height: 1; color: var(--orange); }
+    .result .unter { font-family: var(--font-head); font-weight: 600; font-size: 1.4rem; }
+    .record {   /* Rosette mit Schleife */
+      display: inline-flex; align-items: center; gap: 10px; margin-top: 12px;
+      padding: 4px 16px 4px 4px; border: var(--line); border-radius: 999px 8px 8px 999px;
+      background: var(--paper-3); font-weight: 800;
+    }
+    .record::before {
+      content: ""; width: 30px; height: 30px; flex: none; border-radius: 50%; border: var(--line);
+      background: radial-gradient(circle, #fff3c4 0 34%, #ffd23f 36% 60%, #e07a1f 62%);
+    }
+    .record.new { background: #ffe58a; animation: jump .8s ease 2; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 16px 0 4px; border-top: 2px solid var(--rule); border-bottom: 2px solid var(--rule); }
+    .stat { padding: 10px 4px; font-weight: 700; color: var(--ink-soft); }
+    .stat + .stat { border-left: 2px dashed var(--rule); }
+    .stat b { display: block; font-family: var(--font-head); font-weight: 600; font-size: 2rem; color: var(--ink); }
+    .end-colony { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 2px; margin: 14px 0 4px; }
+    .end-colony .mk { width: 26px; height: 44px; }
+    .end-colony .mk svg { width: 100%; height: 100%; display: block; }
+    /* verpasste Aufgaben als liniertes Heftblatt */
+    .missed {
+      position: relative; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      padding: 4px 0 6px; background: repeating-linear-gradient(transparent 0 34px, var(--rule) 34px 36px);
+    }
+    .missed::before { content: ""; position: absolute; left: 28px; top: 0; bottom: 0; width: 2px; background: #e58f8a; }
+    .missed span {
+      display: block; height: 36px; line-height: 36px; padding-left: 40px;
+      font-family: var(--font-head); font-weight: 600; font-size: 1.2rem; font-variant-numeric: tabular-nums;
+    }
+    .end-actions { display: grid; gap: 12px; margin-top: 6px; justify-items: center; }
+    .setup-actions { display: grid; gap: 12px; justify-items: center; }
+
+    /* ---------- Statistik ---------- */
+    .stats-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .stats-head h1 { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+    .stats-head svg { width: 34px; height: 34px; flex: none; fill: none; stroke: var(--orange); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .stats-card { text-align: center; }
+    .stats-card h2 { text-align: left; }
+    .stats-card .record { margin: 4px 0 6px; }
+    .rekorde { list-style: none; margin: 0; padding: 0; }
+    .rekorde li {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 8px 4px; font-weight: 700;
+    }
+    .rekorde li + li { border-top: 2px dashed var(--rule); }
+    .rekorde li small { display: block; color: var(--ink-soft); font-weight: 400; }
+    .rekorde li b { font-family: var(--font-head); font-weight: 600; font-size: 1.6rem; color: var(--orange-dark); font-variant-numeric: tabular-nums; }
+    .rekorde li.zuletzt { background: var(--soft); border-radius: var(--radius-s); }
+
+    @media (max-width: 420px) {
+      .scene { height: clamp(170px, 30vh, 260px); }
+      .guard { width: 62px; height: 102px; right: 6px; }
+      .colony { right: 78px; }
+      .mound { width: 100px; }
+      .banner { right: 72px; bottom: 84px; }
+      .actions { gap: 10px; }
+      .actions .btn { font-size: .98rem; padding: 8px 12px; }
+      .keypad { gap: 10px; }
+      .keypad button { padding: 10px 0; font-size: 1.6rem; }
+      .seg span { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+<main>
+
+  <!-- ================= Startbildschirm ================= -->
+  <section id="setup">
+    <div class="hero">
+      <div id="heroMk"></div>
+      <div>
+        <h1>Guten Morgen, Erdmännchen!</h1>
+        <div class="muted">Die Sonne geht auf, aber die Erdmännchen schlafen noch. Jede richtige Antwort weckt eins!</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Was wollen wir rechnen?</h2>
+      <div class="tiles" id="ops">
+        <label class="tile"><input type="checkbox" value="add" checked><span class="face"><b>+</b>Plus</span></label>
+        <label class="tile"><input type="checkbox" value="sub" checked><span class="face"><b>−</b>Minus</span></label>
+        <label class="tile"><input type="checkbox" value="mul"><span class="face"><b class="punkt">·</b>Mal</span></label>
+        <label class="tile"><input type="checkbox" value="div"><span class="face"><b>:</b>Geteilt</span></label>
+      </div>
+    </div>
+
+    <div class="card" id="rowsCard">
+      <div class="rows-head">
+        <h2 style="margin:0">Welche Einmaleins-Reihen?</h2>
+        <button class="btn-text" id="rowsAll" type="button">Alle</button>
+      </div>
+      <div class="raster" id="rows"></div>
+    </div>
+
+    <div class="card">
+      <h2>Wie lange dauert der Morgen?</h2>
+      <div class="segmente" id="durations"></div>
+    </div>
+
+    <div class="card">
+      <h2>Sprache</h2>
+      <label class="switch">
+        <span>Aufgaben vorlesen<small>Die Aufgabe wird laut gesagt.</small></span>
+        <input type="checkbox" id="optSpeak" checked>
+      </label>
+      <label class="switch">
+        <span>Antwort sprechen<small>Das Mikrofon hört zu. Tippen geht immer auch.</small></span>
+        <input type="checkbox" id="optListen" checked>
+      </label>
+      <div class="note hidden" id="noSR">
+        Dieser Browser kann keine Sprache erkennen – es wird mit dem Ziffernblock gespielt.
+        Spracheingabe klappt in <b>Chrome</b>, <b>Edge</b> und <b>Safari auf iPad/iPhone</b>.
+      </div>
+    </div>
+
+    <div class="setup-actions">
+      <button class="btn btn-primary btn-big" id="startBtn" type="button">Los geht’s!</button>
+      <button class="btn" id="statsBtnSetup" type="button">Statistik</button>
+    </div>
+    <p class="warn" id="setupWarn"></p>
+  </section>
+
+  <!-- ================= Spiel ================= -->
+  <section id="game" class="hidden">
+    <div class="topbar">
+      <span class="head">Guten Morgen, Erdmännchen!</span>
+      <span class="spacer"></span>
+      <button class="btn-text" id="stopBtn" type="button">Beenden</button>
+    </div>
+
+    <div class="scene" id="scene">
+      <div class="dawn" id="dawn"></div>
+      <div class="sun" id="sun"></div>
+      <svg class="dunes" viewBox="0 0 400 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M-5 45 Q70 10 150 40 T300 30 T405 38 V105 H-5 Z" fill="#ecc98a" stroke="#3b2614" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        <path d="M-5 70 Q90 45 190 66 T405 58 V105 H-5 Z" fill="#e2b56c" stroke="#3b2614" stroke-width="2" vector-effect="non-scaling-stroke"/>
+      </svg>
+      <div class="schild">
+        <span title="Restzeit"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg><span id="timeLeft">0:00</span></span>
+        <span title="Geweckte Erdmännchen"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16" rx="5" ry="4"/><circle cx="5.5" cy="10" r="2"/><circle cx="9.5" cy="6" r="2"/><circle cx="14.5" cy="6" r="2"/><circle cx="18.5" cy="10" r="2"/></svg><span id="score">0</span></span>
+      </div>
+      <div class="colony" id="colony"></div>
+      <div class="mound"></div>
+      <div class="guard" id="guard"></div>
+      <div class="banner hidden" id="banner"></div>
+    </div>
+
+    <div class="card task">
+      <div class="expr" id="expr">&nbsp;</div>
+      <div class="status">
+        <div class="toggles">
+          <button class="tgl" id="spkBtn" type="button" aria-pressed="true" title="Vorlesen an/aus"></button>
+          <button class="tgl" id="micBtn" type="button" aria-pressed="true" title="Mikrofon an/aus"></button>
+        </div>
+        <span id="statusText"></span>
+      </div>
+      <div class="heard" id="heard"></div>
+      <div class="feedback" id="feedback"></div>
+      <div class="actions">
+        <button class="btn" id="skipBtn" type="button">Überspringen</button>
+        <button class="btn" id="padToggle" type="button">Ziffernblock zeigen</button>
+      </div>
+      <div class="keypad hidden" id="keypad"></div>
+    </div>
+  </section>
+
+  <!-- ================= Ende ================= -->
+  <section id="end" class="hidden">
+    <div class="card result">
+      <img class="ende-bild" src="../../assets/art/ende.svg" width="600" height="260" alt="" />
+      <div class="lead">Die Sonne steht hoch am Himmel. Du hast</div>
+      <div class="bignum" id="endCount">0</div>
+      <div class="unter">Erdmännchen geweckt!</div>
+      <div class="end-colony" id="endColony"></div>
+    </div>
+    <div class="card hidden" id="missedCard">
+      <h2>Diese Aufgaben üben wir nochmal:</h2>
+      <div class="missed" id="missed"></div>
+    </div>
+    <div class="end-actions">
+      <button class="btn btn-primary btn-big" id="againBtn" type="button">Nochmal spielen</button>
+      <button class="btn" id="statsBtnEnd" type="button">Statistik</button>
+      <button class="btn" id="setupBtn" type="button">Einstellungen ändern</button>
+    </div>
+  </section>
+
+  <!-- ================= Statistik ================= -->
+  <section id="stats" class="hidden">
+    <div class="stats-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"/></svg>
+      <h1>Statistik</h1>
+      <span class="spacer"></span>
+      <button class="btn-text" id="statsBack" type="button">Zurück</button>
+    </div>
+
+    <div class="card stats-card" id="lastCard">
+      <h2>Letzte Runde</h2>
+      <div class="record" id="lastRecord"></div>
+      <div class="stats">
+        <div class="stat"><b id="lastSolved">0</b>gelöst</div>
+        <div class="stat"><b id="lastFailed">0</b>nicht geschafft</div>
+        <div class="stat"><b id="lastBest">0</b>Rekord</div>
+      </div>
+    </div>
+
+    <div class="card result">
+      <div class="lead">Insgesamt geweckt</div>
+      <div class="bignum" id="statTotal">0</div>
+      <div class="unter">Erdmännchen</div>
+    </div>
+
+    <div class="card">
+      <h2>Rekorde</h2>
+      <ol class="rekorde" id="recList"></ol>
+      <p class="muted" id="noRecs">Noch keine Rekorde. Spiel eine Runde, dann steht hier dein bester Morgen.</p>
+    </div>
+
+    <button class="btn btn-big" id="statsBack2" type="button">Zurück</button>
+  </section>
+
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  // ================= Speicher =================
+  const STORE_KEY = 'erdmaennchen-wache-v1';
+  function loadStore() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
+  }
+  function saveStore(data) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch { /* egal */ }
+  }
+  const store = loadStore();
+  store.records = store.records || {};
+  store.total = store.total || 0;
+
+  // ================= Erdmännchen-Grafik =================
+  const ACCESSORIES = {
+    hat: '<path d="M20 15 L30 -9 L40 15 Z" fill="#e4572e" stroke="#3b2614" stroke-width="2" stroke-linejoin="round"/><path d="M23.5 8 L36.5 8 M26 2 L34 2" stroke="#ffd23f" stroke-width="2"/><circle cx="30" cy="-9" r="3" fill="#ffd23f" stroke="#3b2614" stroke-width="1.5"/>',
+    glasses: '<rect x="17.5" y="19.5" width="11" height="8" rx="3" fill="#111"/><rect x="31.5" y="19.5" width="11" height="8" rx="3" fill="#111"/><path d="M28.5 22.5 H31.5" stroke="#111" stroke-width="2"/><path d="M19.5 21.5 L22.5 21.5" stroke="#fff" stroke-width="1" opacity=".6"/>',
+    crown: '<path d="M18 15 L18 3 L24 9 L30 0 L36 9 L42 3 L42 15 Z" fill="#ffd23f" stroke="#3b2614" stroke-width="1.8" stroke-linejoin="round"/><circle cx="30" cy="10" r="2" fill="#e4572e"/>',
+    flower: '<g transform="translate(40 12)"><circle cx="0" cy="-4" r="3" fill="#ff7aa8"/><circle cx="4" cy="-1" r="3" fill="#ff7aa8"/><circle cx="2.5" cy="3.5" r="3" fill="#ff7aa8"/><circle cx="-2.5" cy="3.5" r="3" fill="#ff7aa8"/><circle cx="-4" cy="-1" r="3" fill="#ff7aa8"/><circle r="2.4" fill="#ffd23f"/></g>',
+    bow: '<path d="M22 43 L30 47 L22 51 Z M38 43 L30 47 L38 51 Z" fill="#3a86ff" stroke="#3b2614" stroke-width="1.5" stroke-linejoin="round"/><circle cx="30" cy="47" r="2.2" fill="#1f5fcc" stroke="#3b2614" stroke-width="1.2"/>'
+  };
+  const SPECIALS = ['hat', 'glasses', 'crown', 'flower', 'bow'];
+
+  function meerkatSVG(acc) {
+    return `<svg viewBox="0 -12 60 112" aria-hidden="true">
+      <g stroke="#3b2614" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+      <path d="M40 80 Q58 77 55 99 Q53 101.5 50.5 99 Q51.5 86 40 87 Z" fill="#a8713f"/>
+      <path d="M30 40 C19 40 15 54 15 68 C15 84 20 94 30 94 C40 94 45 84 45 68 C45 54 41 40 30 40 Z" fill="#c8965f"/>
+      <path d="M30 50 C24.5 50 22 60 22 72 C22 84 25 90 30 90 C35 90 38 84 38 72 C38 60 35.5 50 30 50 Z" fill="#efd6ab" stroke="none"/>
+      <path d="M27 66 l1.5 2 M33 72 l-1.5 2 M28 79 l1.5 2" stroke="#c8a576" stroke-width="1.2"/>
+      <path d="M21 49 Q18 57 24.5 60.5" fill="none"/>
+      <path d="M39 49 Q42 57 35.5 60.5" fill="none"/>
+      <ellipse cx="22" cy="94" rx="7" ry="3.5" fill="#8a5f36"/>
+      <ellipse cx="38" cy="94" rx="7" ry="3.5" fill="#8a5f36"/>
+      <circle cx="17.5" cy="22" r="3.4" fill="#8a5f36"/>
+      <circle cx="42.5" cy="22" r="3.4" fill="#8a5f36"/>
+      <path d="M30 12 C20 12 16.5 19 17 27 C17.5 35 23 40 30 40 C37 40 42.5 35 43 27 C43.5 19 40 12 30 12 Z" fill="#c8965f"/>
+      <path d="M27 15 l1 2 M30 14 v2.5 M33 15 l-1 2" stroke-width="1.2"/>
+      <ellipse cx="30" cy="33" rx="7" ry="5.5" fill="#e6c594" stroke="none"/>
+      <ellipse cx="24" cy="24" rx="4.4" ry="5.4" fill="#6b4524" stroke="none"/>
+      <ellipse cx="36" cy="24" rx="4.4" ry="5.4" fill="#6b4524" stroke="none"/>
+      <circle cx="24.4" cy="24" r="2.5" fill="#1e120a" stroke="none"/>
+      <circle cx="36.4" cy="24" r="2.5" fill="#1e120a" stroke="none"/>
+      <circle cx="25.2" cy="23" r=".95" fill="#fff" stroke="none"/>
+      <circle cx="37.2" cy="23" r=".95" fill="#fff" stroke="none"/>
+      <circle cx="20.5" cy="31.5" r="2" fill="#e98a7a" opacity=".55" stroke="none"/>
+      <circle cx="39.5" cy="31.5" r="2" fill="#e98a7a" opacity=".55" stroke="none"/>
+      <path d="M27.6 30.8 Q30 29.4 32.4 30.8 Q31.4 33.2 30 33.4 Q28.6 33.2 27.6 30.8 Z" fill="#1e120a" stroke-width="1"/>
+      <path d="M27.5 36 Q30 38 32.5 36" fill="none" stroke-width="1.4"/>
+      </g>
+      ${ACCESSORIES[acc] || ''}
+    </svg>`;
+  }
+
+  // ================= Zahlen verstehen =================
+  const norm = s => s.toLowerCase()
+    .replace(/ß/g, 'ss').replace(/ü/g, 'ue').replace(/ö/g, 'oe').replace(/ä/g, 'ae');
+
+  const NUMBER_WORDS = (() => {
+    const m = new Map();
+    ['null', 'eins', 'zwei', 'drei', 'vier', 'fuenf', 'sechs', 'sieben', 'acht', 'neun', 'zehn',
+     'elf', 'zwoelf', 'dreizehn', 'vierzehn', 'fuenfzehn', 'sechzehn', 'siebzehn', 'achtzehn', 'neunzehn']
+      .forEach((w, i) => m.set(w, i));
+    const tens = { 20: 'zwanzig', 30: 'dreissig', 40: 'vierzig', 50: 'fuenfzig',
+                   60: 'sechzig', 70: 'siebzig', 80: 'achtzig', 90: 'neunzig' };
+    const pre = ['', 'ein', 'zwei', 'drei', 'vier', 'fuenf', 'sechs', 'sieben', 'acht', 'neun'];
+    for (const t in tens) {
+      m.set(tens[t], +t);
+      for (let u = 1; u <= 9; u++) m.set(pre[u] + 'und' + tens[t], +t + u);
+      m.set('zwound' + tens[t], +t + 2);
+    }
+    m.set('hundert', 100); m.set('einhundert', 100);
+    // Varianten und typische Fehlerkennungen
+    const extra = { ein: 1, eine: 1, eis: 1, zwo: 2, frei: 3, fuer: 4, sex: 6, sexy: 6, nacht: 8, zehen: 10 };
+    for (const k in extra) m.set(k, extra[k]);
+    return m;
+  })();
+
+  // Liefert {skip, num}: num ist die zuletzt genannte Zahl (Kinder wiederholen gern die Aufgabe).
+  function parseAnswer(text) {
+    let s = norm(String(text || ''));
+    s = s.replace(/(\d+)[:.]00\b/g, '$1');            // "8:00" -> 8
+    s = s.replace(/[^a-z0-9 ]+/g, ' ');
+    if (/\b(weiter|ueberspringen|naechste|weiss nicht|keine ahnung)\b/.test(s)) return { skip: true, num: null };
+    s = s.replace(/\s+und\s+/g, 'und').trim();
+    let num = null;
+    for (const tok of s.split(/\s+/)) {
+      if (/^\d+$/.test(tok)) num = parseInt(tok, 10);
+      else if (/^\dund\d0$/.test(tok)) num = +tok[0] + +tok.slice(-2);
+      else if (NUMBER_WORDS.has(tok)) num = NUMBER_WORDS.get(tok);
+    }
+    return { skip: false, num };
+  }
+
+  // ================= Aufgaben =================
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const OPS = {
+    add: { sym: '+', word: 'plus' },
+    sub: { sym: '−', word: 'minus' },
+    mul: { sym: '·', word: 'mal' },
+    div: { sym: ':', word: 'geteilt durch' }
+  };
+
+  function makeTask(op, rows) {
+    let a, b, answer;
+    if (op === 'add') {
+      a = rnd(1, 99); b = rnd(1, 100 - a); answer = a + b;
+    } else if (op === 'sub') {
+      a = rnd(2, 100); b = rnd(1, a - 1); answer = a - b;
+    } else if (op === 'mul') {
+      const r = pick(rows), f = rnd(1, 10);
+      [a, b] = Math.random() < .5 ? [r, f] : [f, r]; answer = a * b;
+    } else {
+      const r = pick(rows), f = rnd(1, 10);
+      a = r * f; b = r; answer = f;
+    }
+    return { op, a, b, answer, key: `${a}${op}${b}` };
+  }
+  const taskText = t => `${t.a} ${OPS[t.op].sym} ${t.b}`;
+  const taskSpoken = t => `${t.a} ${OPS[t.op].word} ${t.b}`;
+
+  // ================= Töne =================
+  let actx = null;
+  function unlockAudio() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+    } catch { /* kein Ton */ }
+  }
+  function tone(freq, dur, when = 0, type = 'sine', vol = .18) {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      const t = actx.currentTime + when;
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + .02);
+      g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      o.connect(g).connect(actx.destination);
+      o.start(t); o.stop(t + dur + .05);
+    } catch { /* kein Ton */ }
+  }
+  const sndOk = () => { tone(660, .12); tone(990, .2, .1); };
+  const sndBonus = () => { tone(660, .1); tone(880, .1, .09); tone(1320, .25, .18); };
+  const sndBad = () => { tone(220, .25, 0, 'triangle', .2); };
+  const sndEnd = () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, .25, i * .14)); };
+
+  // ================= Sprachausgabe =================
+  const canSpeak = 'speechSynthesis' in window;
+  let deVoice = null, speakId = 0, speakDone = null;
+  function chooseVoice() {
+    if (!canSpeak) return;
+    const voices = speechSynthesis.getVoices().filter(v => /^de(-|_|$)/i.test(v.lang));
+    deVoice = voices.find(v => /de-DE/i.test(v.lang) && v.localService) || voices.find(v => /de-DE/i.test(v.lang)) || voices[0] || null;
+  }
+  if (canSpeak) { chooseVoice(); speechSynthesis.onvoiceschanged = chooseVoice; }
+
+  function cancelSpeech() {
+    speakId++; speakDone = null;
+    if (canSpeak) speechSynthesis.cancel();
+  }
+  // Vorlesen abbrechen, aber das Spiel weiterlaufen lassen (wie nach dem Ende des Satzes)
+  function finishSpeech() {
+    const d = speakDone;
+    if (canSpeak) speechSynthesis.cancel();
+    if (d) d();
+  }
+  // Sprachausgabe noch im Klick freischalten (iOS)
+  function unlockSpeech() {
+    if (!canSpeak) return;
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  }
+  function speak(text, cb) {
+    const id = ++speakId;
+    speakDone = null;
+    let finished = false, guard = null;
+    const done = () => {
+      if (finished || id !== speakId) return;
+      finished = true; clearTimeout(guard); speakDone = null;
+      setStatus(state.phase);
+      if (cb) cb();
+    };
+    if (!state.voiceOut || !canSpeak) { setTimeout(done, 0); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'de-DE'; u.rate = .95;
+    if (deVoice) u.voice = deVoice;
+    u.onend = done; u.onerror = done;
+    guard = setTimeout(done, 2500 + text.length * 110);   // falls onend nie kommt
+    speakDone = done;
+    setMic('speak', '');
+    speechSynthesis.speak(u);
+  }
+
+  // ================= Spracherkennung =================
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let rec = null, recGen = 0, interimTimer = null, recErrors = 0;
+
+  function stopListening() {
+    recGen++;
+    clearTimeout(interimTimer);
+    if (rec) { try { rec.abort(); } catch { /* egal */ } rec = null; }
+  }
+  function startListening() {
+    if (!state.voiceIn || !SR || !state.accepting) return;
+    stopListening();
+    const gen = ++recGen;
+    const r = new SR();
+    r.lang = 'de-DE'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = false;
+    r.onresult = e => { if (gen === recGen) { recErrors = 0; handleSpeech(e); } };
+    r.onerror = e => {
+      if (gen !== recGen) return;
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        disableVoiceIn('Das Mikrofon ist nicht erlaubt – wir tippen die Antworten.');
+      } else if (e.error !== 'no-speech' && e.error !== 'aborted') {
+        if (++recErrors >= 3) disableVoiceIn('Die Spracherkennung klappt gerade nicht – wir tippen die Antworten.');
+      }
+    };
+    r.onend = () => {
+      if (gen !== recGen) return;
+      rec = null;
+      setTimeout(() => { if (gen === recGen && state.accepting && state.listening) startListening(); }, 250);
+    };
+    try { r.start(); rec = r; state.listening = true; setStatus('listening'); } catch { /* läuft schon */ }
+  }
+  function disableVoiceIn(msg) {
+    stopListening();
+    state.voiceIn = false; state.listening = false;
+    showKeypad(true);
+    updateToggles();
+    setStatus(state.phase);
+    els.heard.textContent = msg;
+  }
+
+  function handleSpeech(e) {
+    if (!state.accepting || !state.task) return;
+    const res = e.results[e.results.length - 1];
+    const alts = [];
+    for (let j = 0; j < res.length; j++) alts.push(res[j].transcript);
+    els.heard.textContent = alts[0] ? `Gehört: „${alts[0].trim()}“` : '';
+    const parsed = alts.map(parseAnswer);
+    clearTimeout(interimTimer);
+    if (parsed.some(p => p.num === state.task.answer)) {
+      // Bei Zwischenergebnissen kurz warten – aus "sechs…" kann noch "sechsundfünfzig" werden.
+      if (res.isFinal) submit(state.task.answer);
+      else interimTimer = setTimeout(() => submit(state.task.answer), 700);
+      return;
+    }
+    if (!res.isFinal) return;
+    if (parsed[0] && parsed[0].skip) { skipTask(); return; }
+    const first = parsed.find(p => p.num !== null);
+    if (first) submit(first.num);
+  }
+
+  // ================= Zustand & Elemente =================
+  const $ = id => document.getElementById(id);
+  const els = {
+    setup: $('setup'), game: $('game'), end: $('end'),
+    ops: $('ops'), rows: $('rows'), rowsCard: $('rowsCard'), rowsAll: $('rowsAll'), durations: $('durations'),
+    optSpeak: $('optSpeak'), optListen: $('optListen'), noSR: $('noSR'), startBtn: $('startBtn'), setupWarn: $('setupWarn'),
+    timeLeft: $('timeLeft'), score: $('score'), stopBtn: $('stopBtn'),
+    sun: $('sun'), dawn: $('dawn'), colony: $('colony'), guard: $('guard'), banner: $('banner'),
+    expr: $('expr'), spkBtn: $('spkBtn'), micBtn: $('micBtn'), statusText: $('statusText'), heard: $('heard'), feedback: $('feedback'),
+    skipBtn: $('skipBtn'), padToggle: $('padToggle'), keypad: $('keypad'),
+    endCount: $('endCount'), endColony: $('endColony'),
+    missedCard: $('missedCard'), missed: $('missed'), againBtn: $('againBtn'), setupBtn: $('setupBtn'),
+    stats: $('stats'), lastCard: $('lastCard'), lastRecord: $('lastRecord'), lastSolved: $('lastSolved'),
+    lastFailed: $('lastFailed'), lastBest: $('lastBest'), statTotal: $('statTotal'), recList: $('recList'), noRecs: $('noRecs')
+  };
+  const DURATIONS = [1, 2, 3, 5, 10];
+  const state = {
+    phase: 'setup', voiceOut: true, voiceIn: true, listening: false, accepting: false,
+    task: null, attempts: 0, input: '', solved: 0, failed: 0, streak: 0, taskNo: 0,
+    retry: [], missed: new Map(), colonyList: [], endAt: 0, duration: 0, timeUp: false,
+    timers: [], raf: 0, settings: null
+  };
+
+  // ================= Startbildschirm =================
+  $('heroMk').innerHTML = meerkatSVG('hat');
+  els.guard.innerHTML = meerkatSVG();
+
+  for (let r = 1; r <= 10; r++) {
+    els.rows.insertAdjacentHTML('beforeend',
+      `<label class="feld" title="${r}er-Reihe"><input type="checkbox" value="${r}" checked aria-label="${r}er-Reihe"><span>${r}</span></label>`);
+  }
+  DURATIONS.forEach(d => {
+    els.durations.insertAdjacentHTML('beforeend',
+      `<label class="seg"><input type="radio" name="dur" value="${d}" aria-label="${d} Minuten"><span>${d}<small>Min.</small></span></label>`);
+  });
+
+  if (!SR) {
+    els.optListen.checked = false; els.optListen.disabled = true;
+    els.noSR.classList.remove('hidden');
+  }
+  if (!canSpeak) { els.optSpeak.checked = false; els.optSpeak.disabled = true; }
+
+  function readSettings() {
+    const ops = [...els.ops.querySelectorAll('input:checked')].map(i => i.value);
+    const rows = [...els.rows.querySelectorAll('input:checked')].map(i => +i.value);
+    const dur = +(els.durations.querySelector('input:checked') || {}).value || 2;
+    return { ops, rows, duration: dur, speak: els.optSpeak.checked, listen: els.optListen.checked };
+  }
+  function applySettings(s) {
+    if (!s) s = { ops: ['add', 'sub'], rows: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], duration: 2, speak: true, listen: true };
+    els.ops.querySelectorAll('input').forEach(i => { i.checked = s.ops.includes(i.value); });
+    els.rows.querySelectorAll('input').forEach(i => { i.checked = s.rows.includes(+i.value); });
+    els.durations.querySelectorAll('input').forEach(i => { i.checked = +i.value === s.duration; });
+    if (!els.optSpeak.disabled) els.optSpeak.checked = s.speak !== false;
+    if (!els.optListen.disabled) els.optListen.checked = s.listen !== false;
+  }
+  function updateSetupUI() {
+    const s = readSettings();
+    const needRows = s.ops.includes('mul') || s.ops.includes('div');
+    els.rowsCard.classList.toggle('hidden', !needRows);
+    let warn = '';
+    if (!s.ops.length) warn = 'Bitte mindestens eine Rechenart auswählen.';
+    else if (needRows && !s.rows.length) warn = 'Bitte mindestens eine Einmaleins-Reihe auswählen.';
+    els.setupWarn.textContent = warn;
+    els.startBtn.disabled = !!warn;
+  }
+  applySettings(store.settings);
+  updateSetupUI();
+  els.setup.addEventListener('change', updateSetupUI);
+  els.rowsAll.addEventListener('click', () => {
+    const boxes = [...els.rows.querySelectorAll('input')];
+    const allOn = boxes.every(b => b.checked);
+    boxes.forEach(b => { b.checked = !allOn; });
+    updateSetupUI();
+  });
+
+  // ================= Tastatur / Ziffernblock =================
+  ['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✓'].forEach(k => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = k; b.dataset.key = k;
+    if (k === '✓') b.className = 'ok';
+    if (k === '⌫') b.setAttribute('aria-label', 'Löschen');
+    els.keypad.appendChild(b);
+  });
+  els.keypad.addEventListener('click', e => {
+    const k = e.target.closest('button')?.dataset.key;
+    if (k) pressKey(k);
+  });
+  document.addEventListener('keydown', e => {
+    if (state.phase === 'setup' || state.phase === 'end') return;
+    if (/^\d$/.test(e.key)) pressKey(e.key);
+    else if (e.key === 'Backspace') pressKey('⌫');
+    else if (e.key === 'Enter') { e.preventDefault(); pressKey('✓'); }
+    else return;
+    e.preventDefault();
+  });
+  function pressKey(k) {
+    if (!state.accepting) return;
+    if (k === '⌫') state.input = state.input.slice(0, -1);
+    else if (k === '✓') { if (state.input) submit(parseInt(state.input, 10)); return; }
+    else if (state.input.length < 3) state.input += k;
+    renderExpr();
+  }
+  function showKeypad(on) {
+    els.keypad.classList.toggle('hidden', !on);
+    els.padToggle.textContent = on ? 'Ziffernblock verstecken' : 'Ziffernblock zeigen';
+  }
+  els.padToggle.addEventListener('click', () => showKeypad(els.keypad.classList.contains('hidden')));
+
+  // ================= Anzeige =================
+  const MIC_SVG = '<svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>';
+  const SPK_SVG = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.47 4.47 0 0 0 2.5-4z"/></svg>';
+  const SPK_OFF_SVG = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z"/></svg>';
+  const MIC_OFF_SVG = '<svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/><path d="M3.3 2 2 3.3 20.7 22l1.3-1.3z" stroke="#f3e6cb" stroke-width="1.6" paint-order="stroke"/></svg>';
+  function updateToggles() {
+    els.spkBtn.innerHTML = (state.voiceOut ? SPK_SVG : SPK_OFF_SVG) + (state.voiceOut ? 'Vorlesen an' : 'Vorlesen aus');
+    els.micBtn.innerHTML = (state.voiceIn ? MIC_SVG : MIC_OFF_SVG) + (state.voiceIn ? 'Mikro an' : 'Mikro aus');
+    els.spkBtn.setAttribute('aria-pressed', String(state.voiceOut));
+    els.micBtn.setAttribute('aria-pressed', String(state.voiceIn));
+    els.spkBtn.disabled = !canSpeak;
+    els.micBtn.disabled = !SR;
+    if (!canSpeak) els.spkBtn.title = 'Dieser Browser kann nicht vorlesen.';
+    if (!SR) els.micBtn.title = 'Dieser Browser kann keine Sprache erkennen.';
+  }
+  function setMic(mode, text) {
+    els.spkBtn.classList.toggle('speak', mode === 'speak');
+    els.micBtn.classList.toggle('on', mode === 'listen');
+    if (text !== undefined) els.statusText.textContent = text;
+    els.guard.classList.toggle('listen', mode === 'listen');
+  }
+  function setStatus() {
+    if (speakDone) { setMic('speak', ''); return; }   // während des Vorlesens bleibt der Lautsprecher blau
+    if (!state.accepting) { setMic('', ''); return; }
+    if (state.voiceIn && rec) setMic('listen', 'Ich höre zu … sag die Antwort!');
+    else if (state.voiceIn && SR) setMic('', 'Gleich höre ich zu …');
+    else setMic('', 'Tippe die Antwort ein.');
+  }
+  function renderExpr(mark) {
+    const t = state.task;
+    if (!t) { els.expr.innerHTML = '&nbsp;'; return; }
+    const val = mark === 'solution' || mark === 'ok' ? t.answer : (state.input || '?');
+    const cls = mark === 'ok' ? 'ok' : mark === 'bad' || mark === 'solution' ? 'bad' : '';
+    els.expr.innerHTML = `${taskText(t)} = <span class="ans ${cls}">${val}</span>`;
+  }
+  function animateGuard(cls) {
+    els.guard.classList.remove('jump', 'shake');
+    void els.guard.offsetWidth;
+    els.guard.classList.add(cls);
+  }
+  function addMeerkat(acc) {
+    const d = document.createElement('div');
+    d.className = 'mk'; d.innerHTML = meerkatSVG(acc);
+    els.colony.appendChild(d);
+    state.colonyList.push(acc);
+    const n = els.colony.children.length;
+    els.colony.classList.toggle('small', n > 24 && n <= 60);
+    els.colony.classList.toggle('tiny', n > 60);
+  }
+  function later(fn, ms) { const id = setTimeout(fn, ms); state.timers.push(id); return id; }
+
+  // ================= Spielablauf =================
+  function show(section) {
+    for (const s of ['setup', 'game', 'end', 'stats']) els[s].classList.toggle('hidden', s !== section);
+    window.scrollTo(0, 0);
+  }
+
+  function startGame() {
+    const s = readSettings();
+    store.settings = s; saveStore(store);
+    state.settings = s;
+    state.voiceOut = s.speak && canSpeak;
+    state.voiceIn = s.listen && !!SR;
+    Object.assign(state, {
+      phase: 'game', task: null, attempts: 0, input: '', solved: 0, failed: 0, streak: 0, taskNo: 0,
+      retry: [], missed: new Map(), colonyList: [], timeUp: false, accepting: false, listening: false
+    });
+    state.duration = s.duration * 60 * 1000;
+    els.colony.innerHTML = ''; els.colony.className = 'colony';
+    els.score.textContent = '0';
+    els.heard.textContent = ''; els.feedback.textContent = ''; els.feedback.className = 'feedback';
+    els.banner.classList.add('hidden');
+    showKeypad(!state.voiceIn);
+    renderExpr();
+    show('game');
+    // Ton und Sprachausgabe noch im Klick freischalten (iOS)
+    unlockAudio();
+    if (state.voiceOut) unlockSpeech();
+    updateToggles();
+
+    const go = () => {
+      if (state.phase !== 'game') return;
+      state.endAt = Date.now() + state.duration;
+      tick();
+      nextTask();
+    };
+    // Mikrofon-Erlaubnis gleich beim Start einholen, bevor die Zeit läuft
+    const ready = state.voiceIn ? askMic() : Promise.resolve();
+    ready.then(() => speak('Los geht’s!', go));
+  }
+  function askMic() {
+    if (!navigator.mediaDevices?.getUserMedia) return Promise.resolve();
+    return navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => stream.getTracks().forEach(t => t.stop()))
+      .catch(() => disableVoiceIn('Kein Mikrofon erlaubt – wir tippen die Antworten.'));
+  }
+
+  // ================= Schalter im Spiel =================
+  // Gilt auch für die nächste Runde: Einstellungen und Startbildschirm mitziehen (Rekorde hängen nicht davon ab).
+  function rememberVoice() {
+    if (!els.optSpeak.disabled) els.optSpeak.checked = state.voiceOut;
+    if (!els.optListen.disabled) els.optListen.checked = state.voiceIn;
+    if (store.settings) { store.settings.speak = state.voiceOut; store.settings.listen = state.voiceIn; saveStore(store); }
+  }
+  els.spkBtn.addEventListener('click', () => {
+    if (!canSpeak) return;
+    state.voiceOut = !state.voiceOut;
+    if (state.voiceOut) {
+      unlockSpeech();
+      // Gleich die aktuelle Aufgabe vorlesen, damit man hört, dass es an ist
+      if (state.accepting && state.task) {
+        stopListening(); state.listening = false;
+        speak(taskSpoken(state.task) + '?', startListening);
+      }
+    } else {
+      finishSpeech();
+    }
+    updateToggles(); rememberVoice(); setStatus();
+  });
+  els.micBtn.addEventListener('click', () => {
+    if (!SR) return;
+    if (state.voiceIn) {
+      stopListening();
+      state.voiceIn = false; state.listening = false;
+      showKeypad(true);
+      els.heard.textContent = '';
+    } else {
+      state.voiceIn = true;
+      els.heard.textContent = '';
+      askMic().then(() => {
+        // Läuft gerade eine Ansage, startet das Zuhören danach von selbst
+        if (state.voiceIn && state.accepting && !speakDone) startListening();
+        setStatus();
+      });
+    }
+    updateToggles(); rememberVoice(); setStatus();
+  });
+
+  function tick() {
+    if (state.phase !== 'game') return;
+    const left = Math.max(0, state.endAt - Date.now());
+    const p = 1 - left / state.duration;
+    const sec = Math.ceil(left / 1000);
+    els.timeLeft.textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`;
+    // Sonnenaufgang: die Sonne steigt vom Horizont bis hoch an den Himmel, das Morgenrot verblasst.
+    els.sun.style.left = (8 + p * 50) + '%';
+    els.sun.style.top = (72 - Math.sin(Math.PI / 2 * p) * 56) + '%';
+    els.dawn.style.opacity = Math.max(0, 1 - p / .45).toFixed(3);
+    if (left <= 0 && !state.timeUp) {
+      state.timeUp = true;
+      els.banner.textContent = 'Die Sonne steht hoch – letzte Aufgabe!';
+      els.banner.classList.remove('hidden');
+      later(endGame, 15000);   // falls keine Antwort mehr kommt
+    }
+    state.raf = requestAnimationFrame(tick);
+  }
+
+  function chooseTask() {
+    const due = state.retry.findIndex(r => r.due <= state.taskNo);
+    if (due >= 0 && (!state.task || state.retry[due].task.key !== state.task.key)) {
+      return state.retry.splice(due, 1)[0].task;
+    }
+    const { ops, rows } = state.settings;
+    let t;
+    for (let i = 0; i < 20; i++) {
+      t = makeTask(pick(ops), rows);
+      if (!state.task || t.key !== state.task.key) break;
+    }
+    return t;
+  }
+
+  function nextTask() {
+    if (state.phase !== 'game') return;
+    if (state.timeUp) { endGame(); return; }
+    state.taskNo++;
+    state.task = chooseTask();
+    state.attempts = 0; state.input = '';
+    els.feedback.textContent = ''; els.feedback.className = 'feedback';
+    els.heard.textContent = '';
+    state.accepting = true;
+    renderExpr();
+    setStatus();
+    speak(taskSpoken(state.task) + '?', startListening);
+  }
+
+  function submit(n) {
+    if (!state.accepting || state.phase !== 'game') return;
+    state.accepting = false; state.listening = false;
+    stopListening();
+    cancelSpeech();
+    setStatus();
+    if (n === state.task.answer) onCorrect(); else onWrong(n);
+  }
+
+  function onCorrect() {
+    state.solved++; state.streak++;
+    state.input = '';
+    renderExpr('ok');
+    const special = state.streak % 5 === 0;
+    const acc = special ? SPECIALS[(state.streak / 5 - 1) % SPECIALS.length] : null;
+    addMeerkat(acc);
+    els.score.textContent = state.solved;
+    els.feedback.className = 'feedback ok';
+    els.feedback.textContent = special
+      ? `${state.streak} richtig hintereinander! Ein besonderes Erdmännchen! 🎉`
+      : pick(['Richtig! 🎉', 'Super!', 'Klasse!', 'Stark! 💪', 'Genau!', 'Spitze!']);
+    animateGuard('jump');
+    special ? sndBonus() : sndOk();
+    if (state.attempts > 0) state.retry.push({ task: state.task, due: state.taskNo + 3 });
+    later(nextTask, special ? 1500 : 900);
+  }
+
+  function onWrong(n) {
+    state.attempts++; state.streak = 0;
+    state.input = String(n);
+    renderExpr('bad');
+    animateGuard('shake');
+    sndBad();
+    if (state.attempts < 2) {
+      els.feedback.className = 'feedback bad';
+      els.feedback.textContent = `${n} stimmt leider nicht – nochmal!`;
+      later(() => {
+        if (state.phase !== 'game') return;
+        state.input = '';
+        state.accepting = true;
+        renderExpr();
+        setStatus();
+        speak('Nochmal!', startListening);
+      }, 700);
+    } else {
+      failTask(`${n} stimmt nicht.`);
+    }
+  }
+
+  function skipTask() {
+    if (!state.accepting) return;
+    state.accepting = false; state.listening = false;
+    stopListening(); cancelSpeech();
+    state.streak = 0;
+    failTask('Übersprungen.');
+  }
+  els.skipBtn.addEventListener('click', skipTask);
+
+  function failTask(prefix) {
+    const t = state.task;
+    state.failed++;
+    state.missed.set(t.key, t);
+    state.retry.push({ task: t, due: state.taskNo + 3 });
+    renderExpr('solution');
+    setStatus();
+    els.feedback.className = 'feedback bad';
+    els.feedback.textContent = `${prefix} ${taskText(t)} = ${t.answer}`;
+    speak(`${taskSpoken(t)} ist ${t.answer}.`, () => later(nextTask, state.voiceOut ? 900 : 2200));
+  }
+
+  function endGame() {
+    if (state.phase !== 'game') return;
+    state.phase = 'end';
+    state.accepting = false; state.listening = false;
+    stopListening(); cancelSpeech();
+    cancelAnimationFrame(state.raf);
+    state.timers.forEach(clearTimeout); state.timers = [];
+    setStatus();
+
+    const s = state.settings;
+    const recKey = [s.ops.slice().sort().join('+'),
+      (s.ops.includes('mul') || s.ops.includes('div')) ? s.rows.join('-') : '', s.duration].join('|');
+    const prev = store.records[recKey] || 0;
+    const isNew = state.solved > prev;
+    if (isNew) store.records[recKey] = state.solved;
+    store.total += state.solved;
+    store.last = { key: recKey, solved: state.solved, failed: state.failed, prev, isNew };
+    saveStore(store);
+
+    els.endCount.textContent = state.solved;
+    els.endColony.innerHTML = state.colonyList.map(acc => `<div class="mk">${meerkatSVG(acc)}</div>`).join('');
+    els.missed.innerHTML = [...state.missed.values()]
+      .map(t => `<span>${taskText(t)} = ${t.answer}</span>`).join('');
+    els.missedCard.classList.toggle('hidden', state.missed.size === 0);
+    show('end');
+    sndEnd();
+    speak(state.solved === 1 ? 'Du hast ein Erdmännchen geweckt!'
+      : `Super! Du hast ${state.solved} Erdmännchen geweckt!`);
+  }
+
+  // ================= Statistik =================
+  const OP_ORDER = ['add', 'sub', 'mul', 'div'];
+  const OP_NAMES = { add: 'Plus', sub: 'Minus', mul: 'Mal', div: 'Geteilt' };
+  function recLabel(key) {
+    const [ops, rows, dur] = key.split('|');
+    const names = OP_ORDER.filter(o => ops.split('+').includes(o)).map(o => OP_NAMES[o]).join(', ');
+    let reihen = '';
+    if (rows) {
+      const r = rows.split('-');
+      reihen = r.length === 10 ? 'alle Reihen' : (r.length === 1 ? `${r[0]}er-Reihe` : `Reihen ${r.join(', ')}`);
+    }
+    return { title: names, sub: [reihen, `${dur} Min.`].filter(Boolean).join(' · ') };
+  }
+  function renderStats() {
+    const last = store.last;
+    els.lastCard.classList.toggle('hidden', !last);
+    if (last) {
+      const best = store.records[last.key] || 0;
+      els.lastSolved.textContent = last.solved;
+      els.lastFailed.textContent = last.failed;
+      els.lastBest.textContent = best;
+      const neu = last.isNew && last.solved > 0;
+      els.lastRecord.className = 'record new' + (neu ? '' : ' hidden');
+      els.lastRecord.textContent = last.prev ? `Neuer Rekord! (vorher ${last.prev})` : 'Erster Rekord für diese Einstellung!';
+    }
+    els.statTotal.textContent = store.total;
+    const recs = Object.entries(store.records).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+    els.noRecs.classList.toggle('hidden', recs.length > 0);
+    els.recList.innerHTML = recs.map(([key, n]) => {
+      const l = recLabel(key);
+      return `<li class="${last && last.key === key ? 'zuletzt' : ''}"><span>${l.title}<small>${l.sub}</small></span><b>${n}</b></li>`;
+    }).join('');
+  }
+  function openStats() {
+    renderStats();
+    show('stats');
+  }
+  function closeStats() { show(state.phase === 'end' ? 'end' : 'setup'); }
+  $('statsBtnSetup').addEventListener('click', openStats);
+  $('statsBtnEnd').addEventListener('click', openStats);
+  $('statsBack').addEventListener('click', closeStats);
+  $('statsBack2').addEventListener('click', closeStats);
+
+  els.startBtn.addEventListener('click', startGame);
+  els.againBtn.addEventListener('click', () => { applySettings(store.settings); startGame(); });
+  els.setupBtn.addEventListener('click', () => { cancelSpeech(); state.phase = 'setup'; show('setup'); });
+  els.stopBtn.addEventListener('click', endGame);
+
+  // Für Tests in der Konsole
+  window.__erdmaennchen = { parseAnswer, makeTask, state, endGame };
+})();
+</script>
+</body>
+</html>

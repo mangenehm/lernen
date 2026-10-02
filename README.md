@@ -6,7 +6,7 @@ Die Startseite ist eine gemeinsame Übersicht aller Spiele, gruppiert nach Klass
 
 | Klasse | Spiel | Pfad | Beschreibung |
 |---|---|---|---|
-| Erdmännchenklasse | Guten Morgen, Erdmännchen! | `/erdmaennchenklasse/wache/` | Plus/Minus bis 100, Einmaleins und Einsdurcheins – Aufgaben werden vorgelesen und per Sprache beantwortet. |
+| Erdmännchenklasse | Guten Morgen, Erdmännchen! | `/erdmaennchenklasse/guten-morgen/` | Plus/Minus bis 100, Einmaleins und Einsdurcheins – Aufgaben werden vorgelesen und per Sprache beantwortet. |
 | Hasenklasse | – | – | Noch keine Spiele. |
 
 ## Neues Spiel hinzufügen
@@ -24,7 +24,8 @@ Die Startseite ist eine gemeinsame Übersicht aller Spiele, gruppiert nach Klass
 
 ## Weiterleitungen
 
-- `/erdmaennchen/` → `/erdmaennchenklasse/wache/` (alter Pfad, damit bestehende Links weiter funktionieren)
+- `/erdmaennchen/` → `/erdmaennchenklasse/guten-morgen/` (alter Pfad, damit bestehende Links weiter funktionieren)
+- `/erdmaennchenklasse/wache/` → `/erdmaennchenklasse/guten-morgen/` (alter Name des Spiels)
 - `/erdmaennchenklasse/` → Abschnitt auf der Startseite
 
 Alles sind statische HTML-Seiten ohne Server oder Build-Schritt. Spielstände und Rekorde liegen nur im Browser (localStorage).
