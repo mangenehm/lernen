@@ -244,6 +244,24 @@
       font-family: var(--font-head); font-weight: 600; font-size: 1.2rem; font-variant-numeric: tabular-nums;
     }
     .end-actions { display: grid; gap: 12px; margin-top: 6px; justify-items: center; }
+    .setup-actions { display: grid; gap: 12px; justify-items: center; }
+
+    /* ---------- Statistik ---------- */
+    .stats-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .stats-head h1 { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+    .stats-head svg { width: 34px; height: 34px; flex: none; fill: none; stroke: var(--orange); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .stats-card { text-align: center; }
+    .stats-card h2 { text-align: left; }
+    .stats-card .record { margin: 4px 0 6px; }
+    .rekorde { list-style: none; margin: 0; padding: 0; }
+    .rekorde li {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 8px 4px; font-weight: 700;
+    }
+    .rekorde li + li { border-top: 2px dashed var(--rule); }
+    .rekorde li small { display: block; color: var(--ink-soft); font-weight: 400; }
+    .rekorde li b { font-family: var(--font-head); font-weight: 600; font-size: 1.6rem; color: var(--orange-dark); font-variant-numeric: tabular-nums; }
+    .rekorde li.zuletzt { background: var(--soft); border-radius: var(--radius-s); }
 
     @media (max-width: 420px) {
       .scene { height: clamp(170px, 30vh, 260px); }
@@ -311,7 +329,10 @@
       </div>
     </div>
 
-    <button class="btn btn-primary btn-big" id="startBtn" type="button">Los geht’s!</button>
+    <div class="setup-actions">
+      <button class="btn btn-primary btn-big" id="startBtn" type="button">Los geht’s!</button>
+      <button class="btn" id="statsBtnSetup" type="button">Statistik</button>
+    </div>
     <p class="warn" id="setupWarn"></p>
   </section>
 
@@ -360,13 +381,7 @@
       <div class="lead">Die Sonne steht hoch am Himmel. Du hast</div>
       <div class="bignum" id="endCount">0</div>
       <div class="unter">Erdmännchen geweckt!</div>
-      <div class="record" id="endRecord"></div>
       <div class="end-colony" id="endColony"></div>
-      <div class="stats">
-        <div class="stat"><b id="endSolved">0</b>gelöst</div>
-        <div class="stat"><b id="endFailed">0</b>nicht geschafft</div>
-        <div class="stat"><b id="endTotal">0</b>insgesamt geweckt</div>
-      </div>
     </div>
     <div class="card hidden" id="missedCard">
       <h2>Diese Aufgaben üben wir nochmal:</h2>
@@ -374,8 +389,43 @@
     </div>
     <div class="end-actions">
       <button class="btn btn-primary btn-big" id="againBtn" type="button">Nochmal spielen</button>
+      <button class="btn" id="statsBtnEnd" type="button">Statistik</button>
       <button class="btn" id="setupBtn" type="button">Einstellungen ändern</button>
     </div>
+  </section>
+
+  <!-- ================= Statistik ================= -->
+  <section id="stats" class="hidden">
+    <div class="stats-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"/></svg>
+      <h1>Statistik</h1>
+      <span class="spacer"></span>
+      <button class="btn-text" id="statsBack" type="button">Zurück</button>
+    </div>
+
+    <div class="card stats-card" id="lastCard">
+      <h2>Letzte Runde</h2>
+      <div class="record" id="lastRecord"></div>
+      <div class="stats">
+        <div class="stat"><b id="lastSolved">0</b>gelöst</div>
+        <div class="stat"><b id="lastFailed">0</b>nicht geschafft</div>
+        <div class="stat"><b id="lastBest">0</b>Rekord</div>
+      </div>
+    </div>
+
+    <div class="card result">
+      <div class="lead">Insgesamt geweckt</div>
+      <div class="bignum" id="statTotal">0</div>
+      <div class="unter">Erdmännchen</div>
+    </div>
+
+    <div class="card">
+      <h2>Rekorde</h2>
+      <ol class="rekorde" id="recList"></ol>
+      <p class="muted" id="noRecs">Noch keine Rekorde. Spiel eine Runde, dann steht hier dein bester Morgen.</p>
+    </div>
+
+    <button class="btn btn-big" id="statsBack2" type="button">Zurück</button>
   </section>
 
 </main>
@@ -635,9 +685,10 @@
     sun: $('sun'), dawn: $('dawn'), colony: $('colony'), guard: $('guard'), banner: $('banner'),
     expr: $('expr'), mic: $('mic'), statusText: $('statusText'), heard: $('heard'), feedback: $('feedback'),
     skipBtn: $('skipBtn'), padToggle: $('padToggle'), keypad: $('keypad'),
-    endCount: $('endCount'), endRecord: $('endRecord'), endColony: $('endColony'),
-    endSolved: $('endSolved'), endFailed: $('endFailed'), endTotal: $('endTotal'),
-    missedCard: $('missedCard'), missed: $('missed'), againBtn: $('againBtn'), setupBtn: $('setupBtn')
+    endCount: $('endCount'), endColony: $('endColony'),
+    missedCard: $('missedCard'), missed: $('missed'), againBtn: $('againBtn'), setupBtn: $('setupBtn'),
+    stats: $('stats'), lastCard: $('lastCard'), lastRecord: $('lastRecord'), lastSolved: $('lastSolved'),
+    lastFailed: $('lastFailed'), lastBest: $('lastBest'), statTotal: $('statTotal'), recList: $('recList'), noRecs: $('noRecs')
   };
   const DURATIONS = [1, 2, 3, 5, 10];
   const state = {
@@ -773,7 +824,7 @@
 
   // ================= Spielablauf =================
   function show(section) {
-    for (const s of ['setup', 'game', 'end']) els[s].classList.toggle('hidden', s !== section);
+    for (const s of ['setup', 'game', 'end', 'stats']) els[s].classList.toggle('hidden', s !== section);
     window.scrollTo(0, 0);
   }
 
@@ -951,16 +1002,10 @@
     const isNew = state.solved > prev;
     if (isNew) store.records[recKey] = state.solved;
     store.total += state.solved;
+    store.last = { key: recKey, solved: state.solved, failed: state.failed, prev, isNew };
     saveStore(store);
 
     els.endCount.textContent = state.solved;
-    els.endRecord.className = 'record' + (isNew && state.solved > 0 ? ' new' : '');
-    els.endRecord.textContent = isNew && state.solved > 0
-      ? (prev ? `Neuer Rekord! (vorher ${prev})` : 'Erster Rekord für diese Einstellung!')
-      : `Rekord: ${prev}`;
-    els.endSolved.textContent = state.solved;
-    els.endFailed.textContent = state.failed;
-    els.endTotal.textContent = store.total;
     els.endColony.innerHTML = state.colonyList.map(acc => `<div class="mk">${meerkatSVG(acc)}</div>`).join('');
     els.missed.innerHTML = [...state.missed.values()]
       .map(t => `<span>${taskText(t)} = ${t.answer}</span>`).join('');
@@ -970,6 +1015,49 @@
     speak(state.solved === 1 ? 'Du hast ein Erdmännchen geweckt!'
       : `Super! Du hast ${state.solved} Erdmännchen geweckt!`);
   }
+
+  // ================= Statistik =================
+  const OP_ORDER = ['add', 'sub', 'mul', 'div'];
+  const OP_NAMES = { add: 'Plus', sub: 'Minus', mul: 'Mal', div: 'Geteilt' };
+  function recLabel(key) {
+    const [ops, rows, dur] = key.split('|');
+    const names = OP_ORDER.filter(o => ops.split('+').includes(o)).map(o => OP_NAMES[o]).join(', ');
+    let reihen = '';
+    if (rows) {
+      const r = rows.split('-');
+      reihen = r.length === 10 ? 'alle Reihen' : (r.length === 1 ? `${r[0]}er-Reihe` : `Reihen ${r.join(', ')}`);
+    }
+    return { title: names, sub: [reihen, `${dur} Min.`].filter(Boolean).join(' · ') };
+  }
+  function renderStats() {
+    const last = store.last;
+    els.lastCard.classList.toggle('hidden', !last);
+    if (last) {
+      const best = store.records[last.key] || 0;
+      els.lastSolved.textContent = last.solved;
+      els.lastFailed.textContent = last.failed;
+      els.lastBest.textContent = best;
+      const neu = last.isNew && last.solved > 0;
+      els.lastRecord.className = 'record new' + (neu ? '' : ' hidden');
+      els.lastRecord.textContent = last.prev ? `Neuer Rekord! (vorher ${last.prev})` : 'Erster Rekord für diese Einstellung!';
+    }
+    els.statTotal.textContent = store.total;
+    const recs = Object.entries(store.records).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+    els.noRecs.classList.toggle('hidden', recs.length > 0);
+    els.recList.innerHTML = recs.map(([key, n]) => {
+      const l = recLabel(key);
+      return `<li class="${last && last.key === key ? 'zuletzt' : ''}"><span>${l.title}<small>${l.sub}</small></span><b>${n}</b></li>`;
+    }).join('');
+  }
+  function openStats() {
+    renderStats();
+    show('stats');
+  }
+  function closeStats() { show(state.phase === 'end' ? 'end' : 'setup'); }
+  $('statsBtnSetup').addEventListener('click', openStats);
+  $('statsBtnEnd').addEventListener('click', openStats);
+  $('statsBack').addEventListener('click', closeStats);
+  $('statsBack2').addEventListener('click', closeStats);
 
   els.startBtn.addEventListener('click', startGame);
   els.againBtn.addEventListener('click', () => { applySettings(store.settings); startGame(); });
