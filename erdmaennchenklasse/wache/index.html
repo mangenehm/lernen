@@ -171,7 +171,7 @@
       transform: rotate(45deg) skew(12deg, 12deg);
     }
 
-    .task { text-align: center; padding: 18px 12px 14px; margin-top: 16px; }
+    .task { text-align: center; padding: 14px 12px 14px; margin-top: 12px; }
     .expr {
       font-family: var(--font-head); font-weight: 600;
       font-size: clamp(1.8rem, 9.5vw, 4.6rem); line-height: 1.1;
@@ -186,7 +186,7 @@
     }
     .expr .ans.ok { color: var(--ok); border-color: var(--ok); }
     .expr .ans.bad { color: var(--bad); border-color: var(--bad); }
-    .status { margin-top: 12px; min-height: 2.2em; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; color: var(--ink-soft); }
+    .status { margin-top: 8px; min-height: 2.2em; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; color: var(--ink-soft); }
     .mic {
       width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none;
       background: var(--paper-3); color: var(--ink-soft); border: var(--line); font-size: 1rem;
@@ -196,12 +196,13 @@
     .mic.speak { background: #4aa3df; color: #fff; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(200, 67, 59, .5); } 100% { box-shadow: 0 0 0 16px rgba(200, 67, 59, 0); } }
     .heard { font-size: .95rem; color: var(--ink-soft); min-height: 1.3em; margin-top: 4px; }
-    .feedback { font-family: var(--font-head); font-weight: 600; font-size: 1.4rem; min-height: 1.6em; margin-top: 6px; }
+    .heard:empty { display: none; }   /* nur Platz belegen, wenn etwas gehört wurde */
+    .feedback { font-family: var(--font-head); font-weight: 600; font-size: 1.4rem; line-height: 1.25; min-height: 1.25em; margin: 2px 0 6px; }
     .feedback.ok { color: var(--ok); }
     .feedback.bad { color: var(--bad); }
 
     .actions { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
-    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 360px; margin: 16px auto 4px; }
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 360px; margin: 12px auto 4px; }
     .keypad button {
       border: var(--line); background: var(--paper-2); border-radius: var(--radius-s); padding: 12px 0;
       font-family: var(--font-head); font-weight: 600; font-size: 1.8rem; box-shadow: var(--offset);
@@ -246,12 +247,14 @@
     .end-actions { display: grid; gap: 12px; margin-top: 6px; justify-items: center; }
 
     @media (max-width: 420px) {
+      .scene { height: clamp(170px, 30vh, 260px); }
       .guard { width: 62px; height: 102px; right: 6px; }
       .colony { right: 78px; }
       .mound { width: 100px; }
       .banner { right: 72px; bottom: 84px; }
       .actions { gap: 10px; }
       .actions .btn { font-size: .98rem; padding: 8px 12px; }
+      .keypad { gap: 10px; }
       .keypad button { padding: 10px 0; font-size: 1.6rem; }
       .seg span { font-size: 1.2rem; }
     }
