@@ -1,0 +1,76 @@
+/* Gemeinsame Basis „Bilderbuch / Papier“ für Startseite und Spiele.
+   Schriften liegen lokal in assets/fonts (SIL Open Font License), kein externer Abruf. */
+
+@font-face { font-family: "Fredoka"; font-weight: 500; font-display: swap; src: url("fonts/fredoka-latin-500-normal.woff2") format("woff2"); }
+@font-face { font-family: "Fredoka"; font-weight: 600; font-display: swap; src: url("fonts/fredoka-latin-600-normal.woff2") format("woff2"); }
+@font-face { font-family: "Fredoka"; font-weight: 700; font-display: swap; src: url("fonts/fredoka-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Nunito"; font-weight: 400; font-display: swap; src: url("fonts/nunito-latin-400-normal.woff2") format("woff2"); }
+@font-face { font-family: "Nunito"; font-weight: 700; font-display: swap; src: url("fonts/nunito-latin-700-normal.woff2") format("woff2"); }
+@font-face { font-family: "Nunito"; font-weight: 800; font-display: swap; src: url("fonts/nunito-latin-800-normal.woff2") format("woff2"); }
+
+:root {
+  --paper: #fbf3e2;          /* Seitenhintergrund, Creme */
+  --paper-2: #fffaf0;        /* Karten */
+  --paper-3: #f3e6cb;        /* abgesetzte Flächen */
+  --ink: #3b2614;            /* Konturen und Text */
+  --ink-soft: #7a6048;       /* Nebentext */
+  --rule: #d9c4a0;           /* feine Linien, Heftlinien */
+  --grid: #e7d6b6;           /* Rechenkästchen */
+  --orange: #e07a1f;
+  --orange-dark: #b65d0e;
+  --pink: #d9568a;
+  --green: #4f8a3c;
+  --red: #c8433b;
+  --wood: #a8713f;
+  --wood-dark: #7a4f2a;
+  --radius: 12px;
+  --radius-s: 10px;
+  --line: 2px solid var(--ink);
+  --offset: 3px 3px 0 var(--ink);
+  --font-head: "Fredoka", ui-rounded, "Nunito", system-ui, sans-serif;
+  --font-text: "Nunito", ui-rounded, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* feine Papier-Körnung */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.23 0 0 0 0 0.15 0 0 0 0 0.08 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  min-height: 100vh;
+  background: var(--grain), var(--paper);
+  color: var(--ink);
+  font-family: var(--font-text);
+  -webkit-tap-highlight-color: transparent;
+}
+h1, h2, h3, .head { font-family: var(--font-head); font-weight: 600; letter-spacing: .2px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+
+/* Karte: Papier mit Tintenkontur und hartem Versatzschatten */
+.paper {
+  background: var(--paper-2); border: var(--line); border-radius: var(--radius);
+  box-shadow: var(--offset);
+}
+
+/* Knöpfe */
+.btn {
+  appearance: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 16px; border: var(--line); border-radius: var(--radius-s);
+  background: var(--paper-2); color: var(--ink); box-shadow: var(--offset);
+  font-family: var(--font-head); font-weight: 600; font-size: 1.05rem; line-height: 1.2;
+  text-decoration: none; transition: transform .06s ease, box-shadow .06s ease;
+}
+.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+.btn:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: var(--offset); }
+.btn-primary { background: var(--orange); color: #fff; }
+.btn-big { display: flex; width: 100%; padding: 16px; font-size: 1.5rem; }
+.btn-text {
+  appearance: none; border: 0; background: none; padding: 4px 2px;
+  font-family: var(--font-head); font-weight: 600; color: var(--ink-soft);
+  text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;
+}
+.btn-text:hover { color: var(--ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

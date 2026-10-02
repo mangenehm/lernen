@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 320 200" role="img" aria-label="Erdmännchen hält Wache, umgeben von Rechenzeichen">
+<title>Erdmännchen hält Wache, umgeben von Rechenzeichen</title>
+<defs><symbol id="mk" viewBox="0 -12 60 112"><g stroke="#3b2614" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+<path d="M40 80 Q58 77 55 99 Q53 101.5 50.5 99 Q51.5 86 40 87 Z" fill="#a8713f"/>
+<path d="M30 40 C19 40 15 54 15 68 C15 84 20 94 30 94 C40 94 45 84 45 68 C45 54 41 40 30 40 Z" fill="#c8965f"/>
+<path d="M30 50 C24.5 50 22 60 22 72 C22 84 25 90 30 90 C35 90 38 84 38 72 C38 60 35.5 50 30 50 Z" fill="#efd6ab" stroke="none"/>
+<path d="M27 66 l1.5 2 M33 72 l-1.5 2 M28 79 l1.5 2" stroke="#c8a576" stroke-width="1.2"/>
+<path d="M21 49 Q18 57 24.5 60.5" fill="none"/>
+<path d="M39 49 Q42 57 35.5 60.5" fill="none"/>
+<ellipse cx="22" cy="94" rx="7" ry="3.5" fill="#8a5f36"/>
+<ellipse cx="38" cy="94" rx="7" ry="3.5" fill="#8a5f36"/>
+<circle cx="17.5" cy="22" r="3.4" fill="#8a5f36"/>
+<circle cx="42.5" cy="22" r="3.4" fill="#8a5f36"/>
+<path d="M30 12 C20 12 16.5 19 17 27 C17.5 35 23 40 30 40 C37 40 42.5 35 43 27 C43.5 19 40 12 30 12 Z" fill="#c8965f"/>
+<path d="M27 15 l1 2 M30 14 v2.5 M33 15 l-1 2" stroke-width="1.2"/>
+<ellipse cx="30" cy="33" rx="7" ry="5.5" fill="#e6c594" stroke="none"/>
+<ellipse cx="24" cy="24" rx="4.4" ry="5.4" fill="#6b4524" stroke="none"/>
+<ellipse cx="36" cy="24" rx="4.4" ry="5.4" fill="#6b4524" stroke="none"/>
+<circle cx="24.4" cy="24" r="2.5" fill="#1e120a" stroke="none"/>
+<circle cx="36.4" cy="24" r="2.5" fill="#1e120a" stroke="none"/>
+<circle cx="25.2" cy="23" r=".95" fill="#fff" stroke="none"/>
+<circle cx="37.2" cy="23" r=".95" fill="#fff" stroke="none"/>
+<circle cx="20.5" cy="31.5" r="2" fill="#e98a7a" opacity=".55" stroke="none"/>
+<circle cx="39.5" cy="31.5" r="2" fill="#e98a7a" opacity=".55" stroke="none"/>
+<path d="M27.6 30.8 Q30 29.4 32.4 30.8 Q31.4 33.2 30 33.4 Q28.6 33.2 27.6 30.8 Z" fill="#1e120a" stroke-width="1"/>
+<path d="M27.5 36 Q30 38 32.5 36" fill="none" stroke-width="1.4"/>
+</g></symbol><clipPath id="c"><rect width="320" height="200" rx="10"/></clipPath></defs>
+<g clip-path="url(#c)">
+<rect width="320" height="200" fill="#cfe6ef"/>
+<g transform="translate(50 54) scale(1.25)"><path d="M-26 10 q-8 -16 8 -20 q4 -14 20 -10 q14 -8 22 6 q14 2 10 24 z" fill="#fffaf0" stroke="#3b2614" stroke-width="2.2" stroke-linejoin="round"/><g transform="translate(1 0)"><path d="M-7 0 h14 M0 -7 v14" stroke="#e07a1f" stroke-width="4" stroke-linecap="round"/></g></g><g transform="translate(126 42) scale(1.25)"><path d="M-26 10 q-8 -16 8 -20 q4 -14 20 -10 q14 -8 22 6 q14 2 10 24 z" fill="#fffaf0" stroke="#3b2614" stroke-width="2.2" stroke-linejoin="round"/><g transform="translate(1 0)"><path d="M-7 0 h14" stroke="#d9568a" stroke-width="4" stroke-linecap="round"/></g></g><g transform="translate(214 48) scale(1.25)"><path d="M-26 10 q-8 -16 8 -20 q4 -14 20 -10 q14 -8 22 6 q14 2 10 24 z" fill="#fffaf0" stroke="#3b2614" stroke-width="2.2" stroke-linejoin="round"/><g transform="translate(1 0)"><circle r="3.6" fill="#4f8a3c"/></g></g><g transform="translate(276 96) scale(1.25)"><path d="M-26 10 q-8 -16 8 -20 q4 -14 20 -10 q14 -8 22 6 q14 2 10 24 z" fill="#fffaf0" stroke="#3b2614" stroke-width="2.2" stroke-linejoin="round"/><g transform="translate(1 0)"><circle cy="-5" r="3.2" fill="#3a86ff"/><circle cy="5" r="3.2" fill="#3a86ff"/></g></g>
+<path d="M0 160 Q80 130 160 150 T320 145 V200 H0 Z" fill="#ecc98a" stroke="#3b2614" stroke-width="2.5"/>
+<path d="M110 168 Q160 120 210 168 Z" fill="#e2b56c" stroke="#3b2614" stroke-width="2.5" stroke-linejoin="round"/>
+<path d="M0 182 Q160 168 320 182 V200 H0 Z" fill="#e2b56c" stroke="#3b2614" stroke-width="2.5"/>
+<use href="#mk" x="128" y="58" width="64" height="120"/>
+</g>
+<rect x="1.25" y="1.25" width="317.5" height="197.5" rx="10" fill="none" stroke="#3b2614" stroke-width="2.5"/>
+</svg>
