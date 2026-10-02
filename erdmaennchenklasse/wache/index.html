@@ -45,7 +45,6 @@
     .tile input:checked + .face { background: var(--soft); color: var(--orange-dark); transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
     .tile input:checked + .face b { color: var(--orange); }
     .tile input:focus-visible + .face, .feld input:focus-visible + span, .seg input:focus-visible + span { outline: 3px solid var(--orange); outline-offset: 2px; }
-    .hint { margin-top: 10px; font-size: .92rem; }
 
     /* Einmaleins-Reihen als Rechenkästchen */
     .rows-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
@@ -281,7 +280,6 @@
         <label class="tile"><input type="checkbox" value="mul"><span class="face"><b class="punkt">·</b>Mal</span></label>
         <label class="tile"><input type="checkbox" value="div"><span class="face"><b>:</b>Geteilt</span></label>
       </div>
-      <div class="muted hint">Plus und Minus im Zahlenraum bis 100.</div>
     </div>
 
     <div class="card" id="rowsCard">
