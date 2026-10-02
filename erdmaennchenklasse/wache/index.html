@@ -185,14 +185,21 @@
     }
     .expr .ans.ok { color: var(--ok); border-color: var(--ok); }
     .expr .ans.bad { color: var(--bad); border-color: var(--bad); }
-    .status { margin-top: 8px; min-height: 2.2em; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; color: var(--ink-soft); }
-    .mic {
-      width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none;
-      background: var(--paper-3); color: var(--ink-soft); border: var(--line); font-size: 1rem;
+    .status { margin-top: 10px; display: grid; gap: 8px; justify-items: center; font-weight: 700; color: var(--ink-soft); }
+    .status #statusText { min-height: 1.4em; }
+    /* Schalter für Vorlesen und Mikrofon, auch während des Spiels */
+    .toggles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+    .tgl {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px 6px 10px; border-radius: 999px;
+      background: var(--soft); color: var(--ink); border: var(--line); box-shadow: 2px 2px 0 var(--ink);
+      font: inherit; font-weight: 800; font-size: .95rem; cursor: pointer; touch-action: manipulation;
     }
-    .mic svg { width: 18px; height: 18px; fill: currentColor; }
-    .mic.on { background: var(--bad); color: #fff; animation: pulse 1.2s ease-out infinite; }
-    .mic.speak { background: #4aa3df; color: #fff; }
+    .tgl svg { width: 20px; height: 20px; flex: none; fill: currentColor; }
+    .tgl:active { transform: translate(2px, 2px); box-shadow: none; }
+    .tgl[aria-pressed="false"] { background: var(--paper-3); color: var(--ink-soft); border-style: dashed; box-shadow: none; }
+    .tgl:disabled { opacity: .45; cursor: not-allowed; }
+    .tgl.on { background: var(--bad); color: #fff; animation: pulse 1.2s ease-out infinite; }
+    .tgl.speak { background: #4aa3df; color: #fff; }
     @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(200, 67, 59, .5); } 100% { box-shadow: 0 0 0 16px rgba(200, 67, 59, 0); } }
     .heard { font-size: .95rem; color: var(--ink-soft); min-height: 1.3em; margin-top: 4px; }
     .heard:empty { display: none; }   /* nur Platz belegen, wenn etwas gehört wurde */
@@ -363,7 +370,13 @@
 
     <div class="card task">
       <div class="expr" id="expr">&nbsp;</div>
-      <div class="status"><span class="mic" id="mic"></span><span id="statusText"></span></div>
+      <div class="status">
+        <div class="toggles">
+          <button class="tgl" id="spkBtn" type="button" aria-pressed="true" title="Vorlesen an/aus"></button>
+          <button class="tgl" id="micBtn" type="button" aria-pressed="true" title="Mikrofon an/aus"></button>
+        </div>
+        <span id="statusText"></span>
+      </div>
       <div class="heard" id="heard"></div>
       <div class="feedback" id="feedback"></div>
       <div class="actions">
@@ -584,7 +597,7 @@
 
   // ================= Sprachausgabe =================
   const canSpeak = 'speechSynthesis' in window;
-  let deVoice = null, speakId = 0;
+  let deVoice = null, speakId = 0, speakDone = null;
   function chooseVoice() {
     if (!canSpeak) return;
     const voices = speechSynthesis.getVoices().filter(v => /^de(-|_|$)/i.test(v.lang));
@@ -593,15 +606,29 @@
   if (canSpeak) { chooseVoice(); speechSynthesis.onvoiceschanged = chooseVoice; }
 
   function cancelSpeech() {
-    speakId++;
+    speakId++; speakDone = null;
     if (canSpeak) speechSynthesis.cancel();
+  }
+  // Vorlesen abbrechen, aber das Spiel weiterlaufen lassen (wie nach dem Ende des Satzes)
+  function finishSpeech() {
+    const d = speakDone;
+    if (canSpeak) speechSynthesis.cancel();
+    if (d) d();
+  }
+  // Sprachausgabe noch im Klick freischalten (iOS)
+  function unlockSpeech() {
+    if (!canSpeak) return;
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    speechSynthesis.speak(u);
   }
   function speak(text, cb) {
     const id = ++speakId;
+    speakDone = null;
     let finished = false, guard = null;
     const done = () => {
       if (finished || id !== speakId) return;
-      finished = true; clearTimeout(guard);
+      finished = true; clearTimeout(guard); speakDone = null;
       setStatus(state.phase);
       if (cb) cb();
     };
@@ -612,6 +639,7 @@
     if (deVoice) u.voice = deVoice;
     u.onend = done; u.onerror = done;
     guard = setTimeout(done, 2500 + text.length * 110);   // falls onend nie kommt
+    speakDone = done;
     setMic('speak', '');
     speechSynthesis.speak(u);
   }
@@ -651,6 +679,7 @@
     stopListening();
     state.voiceIn = false; state.listening = false;
     showKeypad(true);
+    updateToggles();
     setStatus(state.phase);
     els.heard.textContent = msg;
   }
@@ -683,7 +712,7 @@
     optSpeak: $('optSpeak'), optListen: $('optListen'), noSR: $('noSR'), startBtn: $('startBtn'), setupWarn: $('setupWarn'),
     timeLeft: $('timeLeft'), score: $('score'), stopBtn: $('stopBtn'),
     sun: $('sun'), dawn: $('dawn'), colony: $('colony'), guard: $('guard'), banner: $('banner'),
-    expr: $('expr'), mic: $('mic'), statusText: $('statusText'), heard: $('heard'), feedback: $('feedback'),
+    expr: $('expr'), spkBtn: $('spkBtn'), micBtn: $('micBtn'), statusText: $('statusText'), heard: $('heard'), feedback: $('feedback'),
     skipBtn: $('skipBtn'), padToggle: $('padToggle'), keypad: $('keypad'),
     endCount: $('endCount'), endColony: $('endColony'),
     missedCard: $('missedCard'), missed: $('missed'), againBtn: $('againBtn'), setupBtn: $('setupBtn'),
@@ -787,13 +816,26 @@
   // ================= Anzeige =================
   const MIC_SVG = '<svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>';
   const SPK_SVG = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.47 4.47 0 0 0 2.5-4z"/></svg>';
+  const SPK_OFF_SVG = '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z"/></svg>';
+  const MIC_OFF_SVG = '<svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V5a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/><path d="M3.3 2 2 3.3 20.7 22l1.3-1.3z" stroke="#f3e6cb" stroke-width="1.6" paint-order="stroke"/></svg>';
+  function updateToggles() {
+    els.spkBtn.innerHTML = (state.voiceOut ? SPK_SVG : SPK_OFF_SVG) + (state.voiceOut ? 'Vorlesen an' : 'Vorlesen aus');
+    els.micBtn.innerHTML = (state.voiceIn ? MIC_SVG : MIC_OFF_SVG) + (state.voiceIn ? 'Mikro an' : 'Mikro aus');
+    els.spkBtn.setAttribute('aria-pressed', String(state.voiceOut));
+    els.micBtn.setAttribute('aria-pressed', String(state.voiceIn));
+    els.spkBtn.disabled = !canSpeak;
+    els.micBtn.disabled = !SR;
+    if (!canSpeak) els.spkBtn.title = 'Dieser Browser kann nicht vorlesen.';
+    if (!SR) els.micBtn.title = 'Dieser Browser kann keine Sprache erkennen.';
+  }
   function setMic(mode, text) {
-    els.mic.className = 'mic' + (mode === 'listen' ? ' on' : mode === 'speak' ? ' speak' : '');
-    els.mic.innerHTML = mode === 'speak' ? SPK_SVG : MIC_SVG;
+    els.spkBtn.classList.toggle('speak', mode === 'speak');
+    els.micBtn.classList.toggle('on', mode === 'listen');
     if (text !== undefined) els.statusText.textContent = text;
     els.guard.classList.toggle('listen', mode === 'listen');
   }
   function setStatus() {
+    if (speakDone) { setMic('speak', ''); return; }   // während des Vorlesens bleibt der Lautsprecher blau
     if (!state.accepting) { setMic('', ''); return; }
     if (state.voiceIn && rec) setMic('listen', 'Ich höre zu … sag die Antwort!');
     else if (state.voiceIn && SR) setMic('', 'Gleich höre ich zu …');
@@ -848,11 +890,8 @@
     show('game');
     // Ton und Sprachausgabe noch im Klick freischalten (iOS)
     unlockAudio();
-    if (state.voiceOut) {
-      const u = new SpeechSynthesisUtterance(' ');
-      u.volume = 0;
-      speechSynthesis.speak(u);
-    }
+    if (state.voiceOut) unlockSpeech();
+    updateToggles();
 
     const go = () => {
       if (state.phase !== 'game') return;
@@ -861,13 +900,56 @@
       nextTask();
     };
     // Mikrofon-Erlaubnis gleich beim Start einholen, bevor die Zeit läuft
-    const ready = state.voiceIn && navigator.mediaDevices?.getUserMedia
-      ? navigator.mediaDevices.getUserMedia({ audio: true })
-          .then(stream => stream.getTracks().forEach(t => t.stop()))
-          .catch(() => disableVoiceIn('Kein Mikrofon erlaubt – wir tippen die Antworten.'))
-      : Promise.resolve();
+    const ready = state.voiceIn ? askMic() : Promise.resolve();
     ready.then(() => speak('Los geht’s!', go));
   }
+  function askMic() {
+    if (!navigator.mediaDevices?.getUserMedia) return Promise.resolve();
+    return navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => stream.getTracks().forEach(t => t.stop()))
+      .catch(() => disableVoiceIn('Kein Mikrofon erlaubt – wir tippen die Antworten.'));
+  }
+
+  // ================= Schalter im Spiel =================
+  // Gilt auch für die nächste Runde: Einstellungen und Startbildschirm mitziehen (Rekorde hängen nicht davon ab).
+  function rememberVoice() {
+    if (!els.optSpeak.disabled) els.optSpeak.checked = state.voiceOut;
+    if (!els.optListen.disabled) els.optListen.checked = state.voiceIn;
+    if (store.settings) { store.settings.speak = state.voiceOut; store.settings.listen = state.voiceIn; saveStore(store); }
+  }
+  els.spkBtn.addEventListener('click', () => {
+    if (!canSpeak) return;
+    state.voiceOut = !state.voiceOut;
+    if (state.voiceOut) {
+      unlockSpeech();
+      // Gleich die aktuelle Aufgabe vorlesen, damit man hört, dass es an ist
+      if (state.accepting && state.task) {
+        stopListening(); state.listening = false;
+        speak(taskSpoken(state.task) + '?', startListening);
+      }
+    } else {
+      finishSpeech();
+    }
+    updateToggles(); rememberVoice(); setStatus();
+  });
+  els.micBtn.addEventListener('click', () => {
+    if (!SR) return;
+    if (state.voiceIn) {
+      stopListening();
+      state.voiceIn = false; state.listening = false;
+      showKeypad(true);
+      els.heard.textContent = '';
+    } else {
+      state.voiceIn = true;
+      els.heard.textContent = '';
+      askMic().then(() => {
+        // Läuft gerade eine Ansage, startet das Zuhören danach von selbst
+        if (state.voiceIn && state.accepting && !speakDone) startListening();
+        setStatus();
+      });
+    }
+    updateToggles(); rememberVoice(); setStatus();
+  });
 
   function tick() {
     if (state.phase !== 'game') return;
