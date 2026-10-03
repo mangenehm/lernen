@@ -118,15 +118,16 @@
       background: #ffd23f; border: var(--line); left: 8%; top: 70%;
     }
     .dunes { position: absolute; left: 0; right: 0; bottom: 0; width: 100%; height: 55%; }
-    .colony {
-      position: absolute; left: 8px; right: 110px; bottom: 6px; top: 30%;
-      display: flex; flex-wrap: wrap-reverse; align-content: flex-start; align-items: flex-end;
-      gap: 0 2px;
+    /* Kolonie: jedes Erdmännchen bekommt einen festen Platz (x) und eine Tiefe (y).
+       Hinten = höher in der Szene und kleiner, vorne = unten und größer. */
+    .colony { position: absolute; left: 6px; right: 104px; bottom: 4px; height: 44%; z-index: 1; --k: 1; }
+    .colony .mk {
+      position: absolute; left: calc((100% - var(--w)) * var(--x)); bottom: calc(var(--y) * 100%);
+      --w: calc(34px * var(--s) * var(--k)); width: var(--w); height: calc(var(--w) * 112 / 60);
+      animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; transform-origin: 50% 100%;
     }
-    .colony .mk { width: 30px; height: 50px; flex: none; animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; transform-origin: 50% 100%; }
-    .colony.small .mk { width: 22px; height: 37px; }
-    .colony.tiny .mk { width: 16px; height: 27px; }
     .colony .mk svg { width: 100%; height: 100%; display: block; }
+    .colony .mk.flip svg { transform: scaleX(-1); }
     @keyframes pop { from { transform: translateY(60%) scaleY(.2); opacity: 0; } to { transform: none; opacity: 1; } }
 
     .guard { position: absolute; right: 12px; bottom: 8px; width: 80px; height: 132px; transform-origin: 50% 100%; z-index: 2; }
@@ -139,7 +140,7 @@
     @keyframes bob { 0%,100% { transform: none; } 50% { transform: translateY(-3px) rotate(2deg); } }
     .mound {
       position: absolute; right: -4px; bottom: -4px; width: 134px; height: 30px; border-radius: 50% 50% 0 0;
-      background: var(--sand-3); border: var(--line);
+      background: var(--sand-3); border: var(--line); z-index: 1;
     }
 
     /* Holzschild mit Zeit und Punkten */
@@ -274,7 +275,7 @@
     @media (max-width: 420px) {
       .scene { height: clamp(170px, 30vh, 260px); }
       .guard { width: 62px; height: 102px; right: 6px; }
-      .colony { right: 78px; }
+      .colony { right: 74px; }
       .mound { width: 100px; }
       .banner { right: 72px; bottom: 84px; }
       .actions { gap: 10px; }
@@ -470,9 +471,11 @@
   };
   const SPECIALS = ['hat', 'glasses', 'crown', 'flower', 'bow'];
 
-  function meerkatSVG(acc) {
-    return `<svg viewBox="0 -12 60 112" aria-hidden="true">
-      <g stroke="#3b2614" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+  // Körper einmal definieren, jedes Erdmännchen verweist nur darauf (<use>).
+  // So bleiben auch 100 Erdmännchen in der Szene leicht.
+  document.body.insertAdjacentHTML('afterbegin',
+    `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+      <g id="mk-body" stroke="#3b2614" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
       <path d="M40 80 Q58 77 55 99 Q53 101.5 50.5 99 Q51.5 86 40 87 Z" fill="#a8713f"/>
       <path d="M30 40 C19 40 15 54 15 68 C15 84 20 94 30 94 C40 94 45 84 45 68 C45 54 41 40 30 40 Z" fill="#c8965f"/>
       <path d="M30 50 C24.5 50 22 60 22 72 C22 84 25 90 30 90 C35 90 38 84 38 72 C38 60 35.5 50 30 50 Z" fill="#efd6ab" stroke="none"/>
@@ -497,8 +500,10 @@
       <path d="M27.6 30.8 Q30 29.4 32.4 30.8 Q31.4 33.2 30 33.4 Q28.6 33.2 27.6 30.8 Z" fill="#1e120a" stroke-width="1"/>
       <path d="M27.5 36 Q30 38 32.5 36" fill="none" stroke-width="1.4"/>
       </g>
-      ${ACCESSORIES[acc] || ''}
-    </svg>`;
+    </defs></svg>`);
+
+  function meerkatSVG(acc) {
+    return `<svg viewBox="0 -12 60 112" aria-hidden="true"><use href="#mk-body"/>${ACCESSORIES[acc] || ''}</svg>`;
   }
 
   // ================= Zahlen verstehen =================
@@ -724,7 +729,7 @@
   const state = {
     phase: 'setup', voiceOut: true, voiceIn: false, listening: false, accepting: false,
     task: null, attempts: 0, input: '', solved: 0, failed: 0, streak: 0, taskNo: 0,
-    retry: [], missed: new Map(), colonyList: [], endAt: 0, duration: 0, timeUp: false,
+    retry: [], missed: new Map(), colonyList: [], colonySpots: [], endAt: 0, duration: 0, timeUp: false,
     timers: [], raf: 0, settings: null
   };
 
@@ -854,14 +859,35 @@
     void els.guard.offsetWidth;
     els.guard.classList.add(cls);
   }
+  // Platz für ein neues Erdmännchen: von ein paar Zufallsorten den nehmen, der am
+  // weitesten von den anderen weg ist. Anfangs verteilen sie sich locker, später
+  // rücken sie zusammen und überlappen wie in einer echten Kolonie.
+  function colonySpot() {
+    const r = els.colony.getBoundingClientRect();
+    const W = r.width || 200, H = r.height || 80;
+    let best = null, bestD = -1;
+    for (let i = 0; i < 10; i++) {
+      const x = Math.random(), y = Math.random() ** 1.2 * .64;
+      let d = Infinity;
+      for (const p of state.colonySpots) {
+        d = Math.min(d, Math.hypot((x - p.x) * W, (y - p.y) * H * 1.6));
+      }
+      if (d > bestD) { bestD = d; best = { x, y }; }
+    }
+    return best;
+  }
   function addMeerkat(acc) {
+    const p = colonySpot();
+    state.colonySpots.push(p);
     const d = document.createElement('div');
-    d.className = 'mk'; d.innerHTML = meerkatSVG(acc);
+    d.className = 'mk' + (Math.random() < .35 ? ' flip' : '');
+    d.style.cssText = `--x:${p.x.toFixed(3)};--y:${p.y.toFixed(3)};--s:${(1 - p.y * .85).toFixed(3)};z-index:${100 - Math.round(p.y * 100)}`;
+    d.innerHTML = meerkatSVG(acc);
     els.colony.appendChild(d);
     state.colonyList.push(acc);
+    // Je voller die Kolonie, desto kleiner alle zusammen (wie weiter weg gezoomt).
     const n = els.colony.children.length;
-    els.colony.classList.toggle('small', n > 24 && n <= 60);
-    els.colony.classList.toggle('tiny', n > 60);
+    els.colony.style.setProperty('--k', Math.max(.55, 1 - Math.max(0, n - 12) * .006).toFixed(3));
   }
   function later(fn, ms) { const id = setTimeout(fn, ms); state.timers.push(id); return id; }
 
@@ -879,10 +905,10 @@
     state.voiceIn = s.listen && !!SR;
     Object.assign(state, {
       phase: 'game', task: null, attempts: 0, input: '', solved: 0, failed: 0, streak: 0, taskNo: 0,
-      retry: [], missed: new Map(), colonyList: [], timeUp: false, accepting: false, listening: false
+      retry: [], missed: new Map(), colonyList: [], colonySpots: [], timeUp: false, accepting: false, listening: false
     });
     state.duration = s.duration * 60 * 1000;
-    els.colony.innerHTML = ''; els.colony.className = 'colony';
+    els.colony.innerHTML = ''; els.colony.style.removeProperty('--k');
     els.score.textContent = '0';
     els.heard.textContent = ''; els.feedback.textContent = ''; els.feedback.className = 'feedback';
     els.banner.classList.add('hidden');
@@ -1148,7 +1174,7 @@
   els.stopBtn.addEventListener('click', endGame);
 
   // Für Tests in der Konsole
-  window.__erdmaennchen = { parseAnswer, makeTask, state, endGame };
+  window.__erdmaennchen = { parseAnswer, makeTask, state, endGame, addMeerkat };
 })();
 </script>
 </body>
