@@ -21,6 +21,10 @@
     "ende.svg": {
       "groesse": "16:7",
       "prompt": "Celebration scene on a bright morning in the savanna. A happy, wide-awake group of five meerkats on a sand dune, the middle one wearing a red party hat with a golden rosette ribbon above it, confetti and small stars in a clear light-blue sky, the sun standing high."
+    },
+    "../icons/icon.svg": {
+      "groesse": "1:1",
+      "prompt": "App icon, square, full-bleed background with no border. A single friendly meerkat standing upright and smiling, in front of a big yellow rising sun with short rays, on a gentle sand hill. Sky fades from pale blue to warm peach. Keep the meerkat and sun inside the central 80% so the icon can be cropped to a circle. Afterwards render PNGs in 512, 192, 180 and 32 px (icon-512.png, icon-192.png, apple-touch-icon.png, favicon-32.png)."
     }
   }
 }
