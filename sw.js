@@ -1,7 +1,7 @@
 // Offline-Helfer: legt die Seiten beim ersten Besuch auf dem Gerät ab.
 // Online wird immer zuerst die aktuelle Fassung geholt, ohne Netz die gespeicherte.
 // Neue Dateien in DATEIEN eintragen und VERSION hochzählen.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const DATEIEN = [
   '/',
   '/erdmaennchenklasse/guten-morgen/',
@@ -24,6 +24,12 @@ const DATEIEN = [
   '/assets/icons/icon-512.png',
   '/assets/icons/apple-touch-icon.png',
   '/assets/icons/favicon-32.png',
+  '/erdmaennchenklasse/guten-morgen/app/manifest.webmanifest',
+  '/erdmaennchenklasse/guten-morgen/app/icon.svg',
+  '/erdmaennchenklasse/guten-morgen/app/icon-512.png',
+  '/erdmaennchenklasse/guten-morgen/app/icon-192.png',
+  '/erdmaennchenklasse/guten-morgen/app/apple-touch-icon.png',
+  '/erdmaennchenklasse/guten-morgen/app/favicon-32.png',
 ];
 
 self.addEventListener('install', (e) => {

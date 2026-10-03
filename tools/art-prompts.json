@@ -24,7 +24,11 @@
     },
     "../icons/icon.svg": {
       "groesse": "1:1",
-      "prompt": "App icon, square, full-bleed background with no border. A single friendly meerkat standing upright and smiling, in front of a big yellow rising sun with short rays, on a gentle sand hill. Sky fades from pale blue to warm peach. Keep the meerkat and sun inside the central 80% so the icon can be cropped to a circle. Afterwards render PNGs in 512, 192, 180 and 32 px (icon-512.png, icon-192.png, apple-touch-icon.png, favicon-32.png)."
+      "prompt": "App icon for a collection of school learning games, square, full-bleed warm cream background with no border. Two stacked school exercise notebooks, the front one with an orange spine and lined pages showing a simple plus sum drawn in ink, the back one with a pink spine, and a yellow pencil with a pink eraser lying diagonally across the corner. Keep everything inside the central 80% so the icon can be cropped to a circle. Afterwards render the PNGs with: node tools/app-anlegen.mjs --symbole assets/icons"
+    },
+    "../../erdmaennchenklasse/guten-morgen/app/icon.svg": {
+      "groesse": "1:1",
+      "prompt": "App icon, square, full-bleed background with no border. A single friendly meerkat standing upright and smiling, in front of a big yellow rising sun with short rays, on a gentle sand hill. Sky fades from pale blue to warm peach. Keep the meerkat and sun inside the central 80% so the icon can be cropped to a circle. Afterwards render the PNGs with: node tools/app-anlegen.mjs --symbole erdmaennchenklasse/guten-morgen/app"
     }
   }
 }
