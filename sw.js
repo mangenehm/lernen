@@ -1,7 +1,7 @@
 // Offline-Helfer: legt die Seiten beim ersten Besuch auf dem Gerät ab.
 // Online wird immer zuerst die aktuelle Fassung geholt, ohne Netz die gespeicherte.
 // Neue Dateien in DATEIEN eintragen und VERSION hochzählen.
-const VERSION = 'v2';
+const VERSION = 'v3';
 const DATEIEN = [
   '/',
   '/erdmaennchenklasse/guten-morgen/',
