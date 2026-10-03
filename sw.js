@@ -1,18 +1,18 @@
 // Offline-Helfer: legt die Seiten beim ersten Besuch auf dem Gerät ab.
 // Online wird immer zuerst die aktuelle Fassung geholt, ohne Netz die gespeicherte.
 // Neue Dateien in DATEIEN eintragen und VERSION hochzählen.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const DATEIEN = [
   '/',
   '/erdmaennchenklasse/guten-morgen/',
   '/manifest.webmanifest',
   '/assets/base.css',
   '/assets/pwa.js',
-  '/assets/art/ende.svg',
-  '/assets/art/header.svg',
-  '/assets/art/karte-wache.svg',
-  '/assets/art/klasse-erdmaennchen.svg',
-  '/assets/art/klasse-hasen.svg',
+  '/assets/art/ende.webp',
+  '/assets/art/header.webp',
+  '/assets/art/karte-wache.webp',
+  '/assets/art/klasse-erdmaennchen.webp',
+  '/assets/art/klasse-hasen.webp',
   '/assets/fonts/fredoka-latin-500-normal.woff2',
   '/assets/fonts/fredoka-latin-600-normal.woff2',
   '/assets/fonts/fredoka-latin-700-normal.woff2',

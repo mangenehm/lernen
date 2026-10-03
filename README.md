@@ -19,8 +19,8 @@ Die Startseite ist eine gemeinsame Übersicht aller Spiele, gruppiert nach Klass
 
 - Gemeinsame Basis in `assets/base.css` (Papier-Look, Tintenkonturen, Knöpfe). Neue Spiele binden sie mit `<link rel="stylesheet" href="../../assets/base.css">` ein.
 - Schriften Fredoka und Nunito liegen lokal in `assets/fonts/` (SIL Open Font License), es werden keine externen Schriften geladen.
-- Illustrationen liegen als SVG in `assets/art/`. Die aktuellen Dateien sind handgezeichnete Platzhalter.
-- Die passenden Recraft-Prompts stehen in `tools/art-prompts.json` (gemeinsamer Stil plus ein Prompt je Datei). Ein mit Recraft erzeugtes SVG (Modell `recraftv4_1_vector`) ersetzt einfach die Datei gleichen Namens.
+- Illustrationen liegen als WebP in `assets/art/`. Sie wurden über OpenRouter mit `google/gemini-3.1-flash-image` erzeugt, danach zugeschnitten und verkleinert.
+- Die Prompts stehen in `tools/art-prompts.json` (gemeinsamer Stil plus ein Prompt je Datei). Ein neu erzeugtes Bild ersetzt die Datei gleichen Namens.
 
 ## Als App installieren (PWA)
 
