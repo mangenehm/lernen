@@ -1,0 +1,39 @@
+{
+  "name": "Guten Morgen, Erdmännchen!",
+  "short_name": "Erdmännchen",
+  "description": "Plus, Minus, Einmaleins und Einsdurcheins: Jede richtige Antwort weckt ein Erdmännchen.",
+  "lang": "de",
+  "id": "/erdmaennchenklasse/guten-morgen/",
+  "start_url": "/erdmaennchenklasse/guten-morgen/",
+  "scope": "/erdmaennchenklasse/guten-morgen/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fbf3e2",
+  "theme_color": "#fbf3e2",
+  "icons": [
+    {
+      "src": "/erdmaennchenklasse/guten-morgen/app/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/erdmaennchenklasse/guten-morgen/app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/erdmaennchenklasse/guten-morgen/app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/erdmaennchenklasse/guten-morgen/app/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
