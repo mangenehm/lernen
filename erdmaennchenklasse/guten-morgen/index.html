@@ -862,19 +862,52 @@
   // Platz für ein neues Erdmännchen: von ein paar Zufallsorten den nehmen, der am
   // weitesten von den anderen weg ist. Anfangs verteilen sie sich locker, später
   // rücken sie zusammen und überlappen wie in einer echten Kolonie.
+  // Obere Kante der hinteren Düne in Szenen-Pixeln (von oben), damit kein
+  // Erdmännchen in der Luft steht. Einmal aus dem SVG-Pfad abgetastet.
+  let duneTop = null;
+  function duneTopAt(px, scene) {
+    if (!duneTop) {
+      const path = document.querySelector('.dunes path');
+      const len = path.getTotalLength();
+      duneTop = new Array(401).fill(100);
+      for (let i = 0; i <= 800; i++) {
+        const pt = path.getPointAtLength(len * i / 800);
+        const xi = Math.round(pt.x);
+        if (xi >= 0 && xi <= 400) duneTop[xi] = Math.min(duneTop[xi], pt.y);
+      }
+    }
+    const dh = scene.height * .55;
+    const xi = Math.max(0, Math.min(400, Math.round(px / scene.width * 400)));
+    return scene.height - dh + duneTop[xi] / 100 * dh;
+  }
+  // Steht ein Erdmännchen an (x, y) mit beiden Füßen im Sand?
+  function onSand(x, y, r, scene, k) {
+    const w = 34 * (1 - y * .85) * k;
+    const cx = r.left - scene.left + (r.width - w) * x + w / 2;
+    const feet = r.bottom - scene.top - y * r.height;
+    return [-.3, 0, .3].every(f => feet >= duneTopAt(cx + f * w, scene) + 3);
+  }
+
+  // Platz für ein neues Erdmännchen: von ein paar Zufallsorten im Sand den nehmen,
+  // der am weitesten von den anderen weg ist. Anfangs verteilen sie sich locker,
+  // später rücken sie zusammen und überlappen wie in einer echten Kolonie.
   function colonySpot() {
     const r = els.colony.getBoundingClientRect();
+    const scene = els.colony.parentElement.getBoundingClientRect();
+    const k = parseFloat(els.colony.style.getPropertyValue('--k')) || 1;
     const W = r.width || 200, H = r.height || 80;
     let best = null, bestD = -1;
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0, ok = 0; i < 40 && ok < 10; i++) {
       const x = Math.random(), y = Math.random() ** 1.2 * .64;
+      if (r.height && !onSand(x, y, r, scene, k)) continue;
+      ok++;
       let d = Infinity;
       for (const p of state.colonySpots) {
         d = Math.min(d, Math.hypot((x - p.x) * W, (y - p.y) * H * 1.6));
       }
       if (d > bestD) { bestD = d; best = { x, y }; }
     }
-    return best;
+    return best || { x: Math.random(), y: 0 };
   }
   function addMeerkat(acc) {
     const p = colonySpot();
