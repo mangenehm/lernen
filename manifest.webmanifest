@@ -1,0 +1,22 @@
+{
+  "name": "Guten Morgen, Erdmännchen!",
+  "short_name": "Erdmännchen",
+  "description": "Kleine Lernspiele für die Schule: Plus, Minus, Einmaleins und Einsdurcheins.",
+  "lang": "de",
+  "id": "/",
+  "start_url": "/erdmaennchenklasse/guten-morgen/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fbf3e2",
+  "theme_color": "#fbf3e2",
+  "icons": [
+    { "src": "/assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Alle Spiele", "url": "/", "icons": [{ "src": "/assets/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
