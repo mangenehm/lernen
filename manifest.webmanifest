@@ -46,6 +46,16 @@
           "sizes": "192x192"
         }
       ]
+    },
+    {
+      "name": "Was hört der Hase?",
+      "url": "/hasenklasse/anlaute/",
+      "icons": [
+        {
+          "src": "/hasenklasse/anlaute/app/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

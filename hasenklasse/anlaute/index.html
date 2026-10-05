@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="manifest" href="/hasenklasse/anlaute/app/manifest.webmanifest" />
+  <meta name="theme-color" content="#fbf3e2" />
+  <link rel="icon" href="/hasenklasse/anlaute/app/icon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/hasenklasse/anlaute/app/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="/hasenklasse/anlaute/app/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="Anlaute" />
+  <script src="/assets/pwa.js" defer></script>
+  <title>Was hört der Hase?</title>
+  <link rel="stylesheet" href="../../assets/base.css" />
+  <style>
+    :root {
+      --soft: #fcebf2;
+      --accent: var(--pink);
+      --accent-dark: #a83a66;
+      --ok: var(--green);
+      --bad: var(--red);
+    }
+    main { max-width: 760px; margin: 0 auto; padding: 16px 16px 32px; }
+    h1 { margin: 0; font-size: clamp(1.8rem, 6.5vw, 2.6rem); font-weight: 700; }
+    h2 { margin: 0 0 12px; font-size: 1.2rem; }
+    .hidden { display: none !important; }
+    .muted { color: var(--ink-soft); }
+
+    .card {
+      background: var(--paper-2); border: var(--line); border-radius: var(--radius);
+      padding: 16px; box-shadow: var(--offset); margin-bottom: 16px;
+    }
+    .btn-big { margin-top: 6px; }
+    .btn-primary { background: var(--accent); }
+
+    /* ---------- Start ---------- */
+    .hero { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; }
+    .hero img { width: 92px; height: 92px; flex: none; }
+    .hero .muted { font-weight: 700; }
+
+    /* Krone für die Selbstlaute („Könige“ wie in der Zebra-Schreibtabelle) */
+    .krone { display: block; width: 18px; height: 10px; margin: 0 auto 3px; }
+    .krone path { fill: #f2b134; stroke: var(--ink); stroke-width: 1.4; stroke-linejoin: round; }
+
+    /* Laute als Heftkästchen */
+    .laute-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    .laute-head .links { display: flex; gap: 14px; }
+    .hinweis { margin: 0 0 12px; font-size: .92rem; color: var(--ink-soft); }
+    .hinweis.aktiv { color: var(--accent-dark); font-weight: 800; }
+    .raster {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr));
+      border: var(--line); border-radius: var(--radius-s); overflow: hidden; background: var(--paper-2);
+    }
+    .feld { position: relative; box-shadow: 0 0 0 1px var(--rule); }
+    .feld input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; z-index: 1; }
+    .feld > span {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 58px;
+      background: var(--paper-2); font-family: var(--font-head); font-weight: 600; font-size: 1.35rem; line-height: 1;
+      white-space: nowrap; user-select: none;
+    }
+    .feld.lang > span { font-size: 1.05rem; }
+    .feld input:checked + span { background: var(--soft); color: var(--accent-dark); }
+    .feld input:checked + span::after {
+      content: ""; position: absolute; inset: 5px; border: 2.5px solid var(--accent); border-radius: 14px;
+    }
+    .feld input:focus-visible + span { outline: 3px solid var(--orange); outline-offset: -3px; }
+    .raster.bis .feld > span { cursor: crosshair; }
+
+    /* Segment-Leisten */
+    .segmente {
+      display: flex; border: var(--line); border-radius: var(--radius-s); overflow: hidden;
+      box-shadow: var(--offset); background: var(--paper-2);
+    }
+    .seg { flex: 1; position: relative; }
+    .seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; z-index: 1; }
+    .seg + .seg span { border-left: var(--line); }
+    .seg span {
+      display: flex; flex-direction: column; align-items: center; padding: 8px 2px;
+      font-family: var(--font-head); font-weight: 600; font-size: 1.35rem; line-height: 1.1; user-select: none;
+    }
+    .seg small { font-family: var(--font-text); font-size: .78rem; font-weight: 700; color: var(--ink-soft); }
+    .seg input:checked + span { background: var(--accent); color: #fff; }
+    .seg input:checked + span small { color: #fff; }
+    .seg input:focus-visible + span { outline: 3px solid var(--orange); outline-offset: -3px; }
+    .zeile + .zeile { margin-top: 16px; }
+
+    .switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 0; font-weight: 700; }
+    .switch small { display: block; color: var(--ink-soft); font-weight: 400; }
+    .switch input {
+      appearance: none; -webkit-appearance: none; position: relative; flex: none; margin: 0; cursor: pointer;
+      width: 54px; height: 32px; border: var(--line); border-radius: 999px; background: var(--paper-3);
+      box-shadow: 2px 2px 0 var(--ink); transition: background .15s ease;
+    }
+    .switch input::before {
+      content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+      background: var(--paper-2); border: var(--line); transition: left .15s ease;
+    }
+    .switch input:checked { background: var(--green); }
+    .switch input:checked::before { left: 25px; }
+    .switch input:disabled { opacity: .45; cursor: not-allowed; }
+    .warn { color: var(--bad); font-weight: 800; min-height: 1.2em; margin: 10px 0 0; text-align: center; }
+    .setup-actions { display: grid; gap: 12px; justify-items: center; }
+
+    /* ---------- Spiel ---------- */
+    .topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .topbar .head { font-size: 1.15rem; color: var(--ink-soft); }
+    .spacer { flex: 1; }
+
+    /* Fortschritt: eine Karotte je Bild */
+    .beet { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px; margin-bottom: 12px; }
+    .beet svg { width: 26px; height: 34px; }
+    .beet .leer path { fill: none; stroke: var(--rule); stroke-dasharray: 3 3; }
+    .beet .jetzt path { stroke: var(--ink-soft); }
+    .beet .weg path { fill: var(--paper-3); stroke: var(--ink-soft); }
+    .beet .da { animation: pop .45s cubic-bezier(.3,1.6,.5,1) both; }
+    @keyframes pop { from { transform: translateY(40%) scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    .buehne { position: relative; text-align: center; padding: 14px 12px 12px; }
+    .bild {
+      display: block; margin: 0 auto; padding: 0; border: 0; background: none; cursor: pointer;
+      width: min(62vw, 300px); aspect-ratio: 1; touch-action: manipulation;
+    }
+    .bild img { width: 100%; height: 100%; display: block; }
+    .bild.neu img { animation: rein .35s ease both; }
+    @keyframes rein { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+    .hoeren {
+      position: absolute; right: 12px; top: 12px; display: inline-flex; align-items: center; justify-content: center;
+      width: 52px; height: 52px; border-radius: 50%; border: var(--line); background: var(--soft); box-shadow: 2px 2px 0 var(--ink);
+      touch-action: manipulation;
+    }
+    .hoeren svg { width: 28px; height: 28px; fill: var(--ink); }
+    .hoeren:active { transform: translate(2px, 2px); box-shadow: none; }
+    .hoeren.spricht { background: #4aa3df; }
+    .hoeren.spricht svg { fill: #fff; }
+    .hoeren:disabled { opacity: .45; cursor: not-allowed; }
+    .hase { position: absolute; left: 6px; bottom: 6px; width: 74px; height: 74px; transform-origin: 50% 100%; pointer-events: none; }
+    .hase.hops { animation: hops .6s ease; }
+    .hase.wackel { animation: wackel .45s ease; }
+    @keyframes hops { 0%,100% { transform: none; } 40% { transform: translateY(-28px) rotate(-6deg); } 70% { transform: translateY(0) scaleY(.9); } }
+    @keyframes wackel { 0%,100% { transform: none; } 20% { transform: rotate(-8deg); } 40% { transform: rotate(7deg); } 60% { transform: rotate(-5deg); } 80% { transform: rotate(3deg); } }
+    .frage { font-family: var(--font-head); font-weight: 600; font-size: 1.25rem; margin: 6px 0 0; min-height: 1.5em; }
+    .frage b { color: var(--accent-dark); }
+
+    .antworten { display: grid; gap: 14px; grid-template-columns: repeat(var(--n, 3), 1fr); margin: 4px 0 10px; }
+    .antwort {
+      position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 104px; padding: 8px 4px; border: var(--line); border-radius: var(--radius);
+      background: var(--paper-2); box-shadow: var(--offset); touch-action: manipulation;
+      font-family: var(--font-head); font-weight: 600; font-size: clamp(2rem, 9vw, 3.2rem); line-height: 1;
+      transition: transform .06s ease, box-shadow .06s ease;
+    }
+    .antwort .krone { width: 26px; height: 14px; margin-bottom: 6px; }
+    .antwort span { white-space: nowrap; }
+    .antwort:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+    .antwort.ok { background: var(--ok); color: #fff; }
+    .antwort.bad { background: var(--bad); color: #fff; animation: wackel .45s ease; }
+    .antwort.loesung { outline: 4px dashed var(--ok); outline-offset: 3px; }
+    .antwort:disabled { cursor: default; }
+    .antwort.aus { opacity: .4; }
+    .feedback { text-align: center; font-family: var(--font-head); font-weight: 600; font-size: 1.35rem; line-height: 1.25; min-height: 1.3em; margin: 0 0 6px; }
+    .feedback.ok { color: var(--ok); }
+    .feedback.bad { color: var(--bad); }
+
+    /* ---------- Ende ---------- */
+    .result { text-align: center; }
+    .ende-bild { display: block; width: 100%; height: auto; border-radius: var(--radius-s); margin-bottom: 14px; }
+    .result .lead { font-weight: 800; color: var(--ink-soft); }
+    .bignum { font-family: var(--font-head); font-weight: 700; font-size: clamp(3.5rem, 18vw, 6rem); line-height: 1; color: var(--orange); }
+    .result .unter { font-family: var(--font-head); font-weight: 600; font-size: 1.4rem; }
+    .ueben { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+    .ueben figure { margin: 0; text-align: center; }
+    .ueben img { width: 100%; max-width: 110px; aspect-ratio: 1; display: block; margin: 0 auto; }
+    .ueben figcaption { font-family: var(--font-head); font-weight: 600; font-size: 1.3rem; }
+    .ueben figcaption b, .wort b { color: var(--accent-dark); text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 3px; }
+    .end-actions { display: grid; gap: 12px; margin-top: 6px; justify-items: center; }
+    .record {
+      display: inline-flex; align-items: center; gap: 10px; margin-top: 12px;
+      padding: 4px 16px 4px 4px; border: var(--line); border-radius: 999px 8px 8px 999px;
+      background: var(--paper-3); font-weight: 800;
+    }
+    .record::before {
+      content: ""; width: 30px; height: 30px; flex: none; border-radius: 50%; border: var(--line);
+      background: radial-gradient(circle, #fff3c4 0 34%, #ffd23f 36% 60%, #e07a1f 62%);
+    }
+
+    /* ---------- Statistik ---------- */
+    .stats-head { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .stats-head h1 { font-size: clamp(1.6rem, 6vw, 2.2rem); }
+    .stats-head svg { width: 34px; height: 34px; flex: none; fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 4px 0; border-top: 2px solid var(--rule); border-bottom: 2px solid var(--rule); text-align: center; }
+    .stat { padding: 10px 4px; font-weight: 700; color: var(--ink-soft); }
+    .stat + .stat { border-left: 2px dashed var(--rule); }
+    .stat b { display: block; font-family: var(--font-head); font-weight: 600; font-size: 2rem; color: var(--ink); }
+    .quoten { list-style: none; margin: 0; padding: 0; }
+    .quoten li { display: grid; grid-template-columns: 64px 1fr 72px; align-items: center; gap: 10px; padding: 6px 0; }
+    .quoten li + li { border-top: 2px dashed var(--rule); }
+    .quoten .laut { font-family: var(--font-head); font-weight: 600; font-size: 1.5rem; text-align: center; }
+    .quoten .balken { height: 18px; border: 2px solid var(--ink); border-radius: 999px; background: var(--paper-3); overflow: hidden; }
+    .quoten .balken i { display: block; height: 100%; background: var(--green); }
+    .quoten .balken i.mittel { background: var(--gold, #f2b134); }
+    .quoten .balken i.schwach { background: var(--red); }
+    .quoten small { font-weight: 700; color: var(--ink-soft); text-align: right; }
+
+    @media (max-width: 420px) {
+      .antworten { gap: 10px; }
+      .antwort { min-height: 88px; }
+      .hase { width: 56px; height: 56px; }
+      .hoeren { width: 46px; height: 46px; }
+      .seg span { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+<main>
+
+  <!-- ================= Startbildschirm ================= -->
+  <section id="setup">
+    <div class="hero">
+      <img src="../../assets/art/anlaute/hase.svg" alt="" width="92" height="92" />
+      <div>
+        <h1>Was hört der Hase?</h1>
+        <div class="muted">Hör genau hin: Womit fängt das Wort an? Für jede richtige Antwort gibt es eine Karotte.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="laute-head">
+        <h2 style="margin:0">Welche Laute kennt ihr schon?</h2>
+        <div class="links">
+          <button class="btn-text" id="bisBtn" type="button" aria-pressed="false">Bis hier</button>
+          <button class="btn-text" id="alleBtn" type="button">Alle</button>
+          <button class="btn-text" id="keineBtn" type="button">Keine</button>
+        </div>
+      </div>
+      <p class="hinweis" id="hinweis">Reihenfolge wie im Zebra-Buchstabenheft. Die Selbstlaute tragen eine Krone.</p>
+      <div class="raster" id="raster"></div>
+    </div>
+
+    <div class="card">
+      <div class="zeile">
+        <h2>Wie viele Bilder?</h2>
+        <div class="segmente" id="anzahl"></div>
+      </div>
+      <div class="zeile">
+        <h2>Wie viele Antworten zur Auswahl?</h2>
+        <div class="segmente" id="knoepfe"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <label class="switch">
+        <span>Wörter vorlesen<small>Das Wort wird laut gesagt. Antippen des Bildes sagt es noch einmal.</small></span>
+        <input type="checkbox" id="optSpeak" checked>
+      </label>
+    </div>
+
+    <div class="setup-actions">
+      <button class="btn btn-primary btn-big" id="startBtn" type="button">Los geht’s!</button>
+      <button class="btn" id="statsBtnSetup" type="button">Statistik</button>
+    </div>
+    <p class="warn" id="setupWarn"></p>
+  </section>
+
+  <!-- ================= Spiel ================= -->
+  <section id="game" class="hidden">
+    <div class="topbar">
+      <span class="head">Was hört der Hase?</span>
+      <span class="spacer"></span>
+      <button class="btn-text" id="stopBtn" type="button">Beenden</button>
+    </div>
+
+    <div class="beet" id="beet" aria-hidden="true"></div>
+
+    <div class="card buehne">
+      <button class="bild" id="bild" type="button" aria-label="Wort noch einmal hören"><img id="bildImg" alt="" /></button>
+      <button class="hoeren" id="hoeren" type="button" aria-label="Wort noch einmal hören" title="Nochmal hören">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.47 4.47 0 0 0 2.5-4zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06A9 9 0 0 0 14 3.23z"/></svg>
+      </button>
+      <img class="hase" id="hase" src="../../assets/art/anlaute/hase.svg" alt="" />
+      <p class="frage" id="frage">&nbsp;</p>
+    </div>
+
+    <div class="antworten" id="antworten"></div>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+  </section>
+
+  <!-- ================= Ende ================= -->
+  <section id="end" class="hidden">
+    <div class="card result">
+      <img class="ende-bild" src="../../assets/art/ende-anlaute.svg" width="600" height="260" alt="" />
+      <div class="lead">Super gehört! Du hast</div>
+      <div class="bignum" id="endCount">0</div>
+      <div class="unter" id="endUnter">Karotten geerntet!</div>
+      <div class="record hidden" id="endRecord">Alles richtig!</div>
+    </div>
+    <div class="card hidden" id="uebenCard">
+      <h2>Diese Wörter üben wir nochmal:</h2>
+      <div class="ueben" id="ueben"></div>
+    </div>
+    <div class="end-actions">
+      <button class="btn btn-primary btn-big" id="againBtn" type="button">Nochmal spielen</button>
+      <button class="btn" id="statsBtnEnd" type="button">Statistik</button>
+      <button class="btn" id="setupBtn" type="button">Einstellungen ändern</button>
+    </div>
+  </section>
+
+  <!-- ================= Statistik ================= -->
+  <section id="stats" class="hidden">
+    <div class="stats-head">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M2 20h20"/></svg>
+      <h1>Statistik</h1>
+      <span class="spacer"></span>
+      <button class="btn-text" id="statsBack" type="button">Zurück</button>
+    </div>
+
+    <div class="card" id="lastCard">
+      <h2>Letzte Runde</h2>
+      <div class="stats">
+        <div class="stat"><b id="lastOk">0</b>Karotten</div>
+        <div class="stat"><b id="lastAll">0</b>Bilder</div>
+        <div class="stat"><b id="lastFirst">0</b>gleich richtig</div>
+      </div>
+    </div>
+
+    <div class="card result">
+      <div class="lead">Insgesamt geerntet</div>
+      <div class="bignum" id="statTotal">0</div>
+      <div class="unter">Karotten</div>
+    </div>
+
+    <div class="card">
+      <h2>So sicher sitzen die Laute</h2>
+      <p class="hinweis">Anteil der Bilder, die beim ersten Versuch richtig waren.</p>
+      <ul class="quoten" id="quoten"></ul>
+      <p class="muted" id="noQuoten">Noch keine Runde gespielt.</p>
+      <div class="setup-actions" style="margin-top:12px"><button class="btn-text" id="resetBtn" type="button">Statistik löschen</button></div>
+    </div>
+
+    <button class="btn btn-big" id="statsBack2" type="button">Zurück</button>
+  </section>
+
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  // ================= Laute (Reihenfolge wie im Zebra-Buchstabenheft) =================
+  // koenig: Selbstlaut mit Krone. Laute nur im Wortinneren (ch, ng, ck, tz, ie, ß, äu) und
+  // die Merkbuchstaben V, C, X, Y kommen als Anlaut nicht vor.
+  const LAUTE = ['I', 'M', 'A', 'L', 'O', 'T', 'S', 'E', 'P', 'N', 'U', 'F', 'G', 'R', 'Z', 'B', 'Sch', 'K', 'D',
+    'Ei', 'Au', 'Eu', 'H', 'J', 'W', 'Ö', 'Ü', 'Sp', 'St', 'Pf', 'Ä', 'Qu'];
+  const KOENIGE = new Set(['A', 'E', 'I', 'O', 'U', 'Ä', 'Ö', 'Ü', 'Ei', 'Au', 'Eu']);
+  // Diese Laute dürfen nie als falsche Antwort neben dem Laut des Wortes stehen,
+  // weil man sie am Wortanfang auch hört oder sieht (Ei-mer, Sch-af, Sp = „schp“, Ä klingt wie E).
+  const NICHT_NEBEN = {
+    Ei: ['E'], Eu: ['E'], Au: ['A'], Sch: ['S', 'Sp', 'St'], Sp: ['S', 'Sch', 'St'], St: ['S', 'Sch', 'Sp'],
+    Pf: ['P', 'F'], Qu: ['K'], Ä: ['E'], E: ['Ä']
+  };
+  const klein = l => l.toLowerCase();
+
+  // ================= Wörter =================
+  // Nur kurzes I im Anlaut (kein Igel: langes I im Anlaut ist ein Merkwort, die Tabelle zeigt den Riesen mit ie).
+  const WOERTER = [
+    ['Insel', 'I'], ['Inliner', 'I'], ['Insekt', 'I'],
+    ['Maus', 'M'], ['Mond', 'M'], ['Möhre', 'M'], ['Mütze', 'M'], ['Melone', 'M'],
+    ['Affe', 'A'], ['Ampel', 'A'], ['Ananas', 'A'], ['Anker', 'A'], ['Ameise', 'A'], ['Apfel', 'A'],
+    ['Löwe', 'L'], ['Leiter', 'L'], ['Lampe', 'L'], ['Löffel', 'L'], ['Laterne', 'L'],
+    ['Otter', 'O'], ['Oktopus', 'O'], ['Ohr', 'O'], ['Ofen', 'O'], ['Oma', 'O'], ['Opa', 'O'],
+    ['Tisch', 'T'], ['Tomate', 'T'], ['Tasse', 'T'], ['Tiger', 'T'], ['Topf', 'T'], ['Turm', 'T'],
+    ['Sonne', 'S'], ['Sofa', 'S'], ['Säge', 'S'], ['Salat', 'S'], ['Socke', 'S'], ['Seife', 'S'],
+    ['Ente', 'E'], ['Elefant', 'E'], ['Esel', 'E'], ['Erdbeere', 'E'],
+    ['Puppe', 'P'], ['Pilz', 'P'], ['Pinsel', 'P'], ['Pinguin', 'P'], ['Pizza', 'P'], ['Paket', 'P'],
+    ['Nase', 'N'], ['Nest', 'N'], ['Nudel', 'N'], ['Nuss', 'N'], ['Nilpferd', 'N'],
+    ['Unterhose', 'U'], ['Uhr', 'U'], ['Uhu', 'U'], ['Ufo', 'U'],
+    ['Fisch', 'F'], ['Fuß', 'F'], ['Feder', 'F'], ['Frosch', 'F'], ['Fahrrad', 'F'],
+    ['Gabel', 'G'], ['Gurke', 'G'], ['Giraffe', 'G'], ['Geschenk', 'G'], ['Gitarre', 'G'],
+    ['Rad', 'R'], ['Rose', 'R'], ['Rakete', 'R'], ['Ring', 'R'], ['Raupe', 'R'], ['Regenschirm', 'R'],
+    ['Zebra', 'Z'], ['Zaun', 'Z'], ['Zahn', 'Z'], ['Zelt', 'Z'], ['Zug', 'Z'], ['Zitrone', 'Z'],
+    ['Ball', 'B'], ['Banane', 'B'], ['Baum', 'B'], ['Bär', 'B'], ['Biene', 'B'], ['Boot', 'B'],
+    ['Schaf', 'Sch'], ['Schuh', 'Sch'], ['Schnecke', 'Sch'], ['Schlange', 'Sch'], ['Schaukel', 'Sch'],
+    ['Katze', 'K'], ['Kerze', 'K'], ['Kuh', 'K'], ['Krone', 'K'], ['Käse', 'K'], ['Kamel', 'K'],
+    ['Dino', 'D'], ['Dose', 'D'], ['Dach', 'D'], ['Daumen', 'D'], ['Delfin', 'D'], ['Drache', 'D'],
+    ['Ei', 'Ei'], ['Eis', 'Ei'], ['Eimer', 'Ei'], ['Eichhörnchen', 'Ei'], ['Eisbär', 'Ei'],
+    ['Auto', 'Au'], ['Auge', 'Au'], ['Aufzug', 'Au'],
+    ['Eule', 'Eu'], ['Euro', 'Eu'],
+    ['Hut', 'H'], ['Haus', 'H'], ['Hase', 'H'], ['Hund', 'H'], ['Herz', 'H'], ['Hand', 'H'],
+    ['Jacke', 'J'], ['Jojo', 'J'], ['Joghurt', 'J'], ['Jaguar', 'J'],
+    ['Wal', 'W'], ['Wolke', 'W'], ['Wurm', 'W'], ['Würfel', 'W'], ['Waage', 'W'],
+    ['Öl', 'Ö'], ['Ölkanne', 'Ö'],
+    ['Überraschung', 'Ü'],
+    ['Spinne', 'Sp'], ['Spiegel', 'Sp'], ['Spaten', 'Sp'],
+    ['Stern', 'St'], ['Stiefel', 'St'], ['Stuhl', 'St'], ['Storch', 'St'], ['Stift', 'St'],
+    ['Pferd', 'Pf'], ['Pfanne', 'Pf'], ['Pfote', 'Pf'], ['Pfirsich', 'Pf'], ['Pfeife', 'Pf'],
+    ['Äpfel', 'Ä'], ['Ähre', 'Ä'],
+    ['Qualle', 'Qu'], ['Quadrat', 'Qu']
+  ].map(([wort, laut]) => ({
+    wort, laut,
+    bild: '../../assets/art/anlaute/' + wort.toLowerCase()
+      .replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss') + '.svg'
+  }));
+
+  // ================= Speicher =================
+  const STORE_KEY = 'hasen-anlaute-v1';
+  function loadStore() {
+    try { return JSON.parse(localStorage.getItem(STORE_KEY)) || {}; } catch { return {}; }
+  }
+  function saveStore(data) {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch { /* egal */ }
+  }
+  const store = loadStore();
+  store.total = store.total || 0;
+  store.laute = store.laute || {};
+
+  // ================= Hilfen =================
+  const $ = id => document.getElementById(id);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+    return a;
+  }
+  const KRONE = '<svg class="krone" viewBox="0 0 20 11" aria-hidden="true"><path d="M1.5 10 L1 2 L6 6 L10 1 L14 6 L19 2 L18.5 10 Z"/></svg>';
+  const lautHTML = l => (KOENIGE.has(l) ? KRONE : '') + `<span>${l} ${klein(l)}</span>`;
+  const wortHTML = w => `<b>${w.wort.slice(0, w.laut.length)}</b>${w.wort.slice(w.laut.length)}`;
+  const KAROTTE = '<svg viewBox="0 0 26 34"><path d="M10 9 Q6 3 3 2 Q8 3 12 8 M13 8 Q13 2 16 0 Q15 5 15 8 M15 9 Q20 5 24 6 Q19 8 16 11" fill="#6fae4f" stroke="#3b2614" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 10 C12 6 19 8 18 13 L9 32 Q7 34 6 32 L5 15 Q5 11 8 10 Z" fill="#e07a1f" stroke="#3b2614" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+
+  // ================= Töne =================
+  let actx = null;
+  function unlockAudio() {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+    } catch { /* kein Ton */ }
+  }
+  function tone(freq, dur, when = 0, type = 'sine', vol = .18) {
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      const t = actx.currentTime + when;
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(.0001, t);
+      g.gain.exponentialRampToValueAtTime(vol, t + .02);
+      g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      o.connect(g).connect(actx.destination);
+      o.start(t); o.stop(t + dur + .05);
+    } catch { /* kein Ton */ }
+  }
+  const sndOk = () => { tone(660, .12); tone(990, .2, .1); };
+  const sndBad = () => { tone(220, .25, 0, 'triangle', .2); };
+  const sndEnd = () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, .25, i * .14)); };
+
+  // ================= Sprachausgabe =================
+  const canSpeak = 'speechSynthesis' in window;
+  let deVoice = null, speakId = 0;
+  function chooseVoice() {
+    if (!canSpeak) return;
+    const voices = speechSynthesis.getVoices().filter(v => /^de(-|_|$)/i.test(v.lang));
+    deVoice = voices.find(v => /de-DE/i.test(v.lang) && v.localService) || voices.find(v => /de-DE/i.test(v.lang)) || voices[0] || null;
+  }
+  if (canSpeak) { chooseVoice(); speechSynthesis.onvoiceschanged = chooseVoice; }
+
+  function cancelSpeech() {
+    speakId++;
+    els.hoeren.classList.remove('spricht');
+    if (canSpeak) speechSynthesis.cancel();
+  }
+  // Sprachausgabe noch im Klick freischalten (iOS)
+  function unlockSpeech() {
+    if (!canSpeak) return;
+    const u = new SpeechSynthesisUtterance(' ');
+    u.volume = 0;
+    speechSynthesis.speak(u);
+  }
+  function speak(text, cb) {
+    const id = ++speakId;
+    let finished = false, guard = null;
+    const done = () => {
+      if (finished || id !== speakId) return;
+      finished = true; clearTimeout(guard);
+      els.hoeren.classList.remove('spricht');
+      if (cb) cb();
+    };
+    if (!state.voiceOut || !canSpeak) { setTimeout(done, 0); return; }
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'de-DE'; u.rate = .85;
+    if (deVoice) u.voice = deVoice;
+    u.onend = done; u.onerror = done;
+    guard = setTimeout(done, 2500 + text.length * 110);   // falls onend nie kommt
+    els.hoeren.classList.add('spricht');
+    speechSynthesis.speak(u);
+  }
+
+  // ================= Zustand & Elemente =================
+  const els = {
+    setup: $('setup'), game: $('game'), end: $('end'), stats: $('stats'),
+    raster: $('raster'), hinweis: $('hinweis'), bisBtn: $('bisBtn'), anzahl: $('anzahl'), knoepfe: $('knoepfe'),
+    optSpeak: $('optSpeak'), startBtn: $('startBtn'), setupWarn: $('setupWarn'),
+    beet: $('beet'), bild: $('bild'), bildImg: $('bildImg'), hoeren: $('hoeren'), hase: $('hase'), frage: $('frage'),
+    antworten: $('antworten'), feedback: $('feedback'),
+    endCount: $('endCount'), endUnter: $('endUnter'), endRecord: $('endRecord'), uebenCard: $('uebenCard'), ueben: $('ueben'),
+    lastCard: $('lastCard'), lastOk: $('lastOk'), lastAll: $('lastAll'), lastFirst: $('lastFirst'),
+    statTotal: $('statTotal'), quoten: $('quoten'), noQuoten: $('noQuoten')
+  };
+  const ANZAHLEN = [5, 10, 15];
+  const KNOEPFE = [3, 4];
+  const state = {
+    phase: 'setup', voiceOut: true, accepting: false, settings: null,
+    plan: [], nr: 0, task: null, attempts: 0, ok: 0, first: 0, missed: new Map(), ergebnis: [], timers: []
+  };
+  function later(fn, ms) { const id = setTimeout(fn, ms); state.timers.push(id); return id; }
+
+  // ================= Startbildschirm =================
+  LAUTE.forEach((l, i) => {
+    els.raster.insertAdjacentHTML('beforeend',
+      `<label class="feld${l.length > 2 ? ' lang' : ''}" title="${l}"><input type="checkbox" value="${l}" data-i="${i}" aria-label="${l}"><span>${lautHTML(l)}</span></label>`);
+  });
+  ANZAHLEN.forEach(n => els.anzahl.insertAdjacentHTML('beforeend',
+    `<label class="seg"><input type="radio" name="anzahl" value="${n}" aria-label="${n} Bilder"><span>${n}<small>Bilder</small></span></label>`));
+  KNOEPFE.forEach(n => els.knoepfe.insertAdjacentHTML('beforeend',
+    `<label class="seg"><input type="radio" name="knoepfe" value="${n}" aria-label="${n} Antworten"><span>${n}<small>Antworten</small></span></label>`));
+  if (!canSpeak) { els.optSpeak.checked = false; els.optSpeak.disabled = true; }
+
+  const boxes = () => [...els.raster.querySelectorAll('input')];
+  function readSettings() {
+    return {
+      laute: boxes().filter(b => b.checked).map(b => b.value),
+      anzahl: +(els.anzahl.querySelector('input:checked') || {}).value || 10,
+      knoepfe: +(els.knoepfe.querySelector('input:checked') || {}).value || 3,
+      speak: els.optSpeak.checked
+    };
+  }
+  function applySettings(s) {
+    if (!s) s = { laute: ['I', 'M', 'A', 'L', 'O'], anzahl: 10, knoepfe: 3, speak: true };
+    boxes().forEach(b => { b.checked = s.laute.includes(b.value); });
+    els.anzahl.querySelectorAll('input').forEach(i => { i.checked = +i.value === s.anzahl; });
+    els.knoepfe.querySelectorAll('input').forEach(i => { i.checked = +i.value === s.knoepfe; });
+    if (!els.optSpeak.disabled) els.optSpeak.checked = s.speak !== false;
+  }
+  function updateSetupUI() {
+    const s = readSettings();
+    let warn = '';
+    if (s.laute.length < 2) warn = 'Bitte mindestens zwei Laute auswählen.';
+    els.setupWarn.textContent = warn;
+    els.startBtn.disabled = !!warn;
+  }
+  applySettings(store.settings);
+  updateSetupUI();
+  els.setup.addEventListener('change', updateSetupUI);
+
+  // „Bis hier“: der nächste Tipp ins Raster wählt alle Laute bis zu diesem aus.
+  const HINWEIS = els.hinweis.textContent;
+  function setBis(on) {
+    els.bisBtn.setAttribute('aria-pressed', String(on));
+    els.raster.classList.toggle('bis', on);
+    els.hinweis.classList.toggle('aktiv', on);
+    els.hinweis.textContent = on ? 'Tippe auf den Laut, bis zu dem ihr schon seid.' : HINWEIS;
+  }
+  els.bisBtn.addEventListener('click', () => setBis(els.bisBtn.getAttribute('aria-pressed') !== 'true'));
+  els.raster.addEventListener('click', e => {
+    const box = e.target.closest('input');
+    if (!box || els.bisBtn.getAttribute('aria-pressed') !== 'true') return;
+    const bis = +box.dataset.i;
+    boxes().forEach((b, i) => { b.checked = i <= bis; });
+    setBis(false);
+    updateSetupUI();
+  });
+  $('alleBtn').addEventListener('click', () => { boxes().forEach(b => { b.checked = true; }); setBis(false); updateSetupUI(); });
+  $('keineBtn').addEventListener('click', () => { boxes().forEach(b => { b.checked = false; }); setBis(false); updateSetupUI(); });
+
+  // ================= Aufgaben =================
+  // Reihenfolge der Bilder für eine Runde: kein Wort doppelt, solange es noch andere gibt,
+  // und möglichst nicht zweimal derselbe Laut hintereinander.
+  function makePlan(laute, n) {
+    const pool = WOERTER.filter(w => laute.includes(w.laut));
+    const plan = [];
+    let bag = [];
+    while (plan.length < n) {
+      if (!bag.length) bag = shuffle(pool);
+      const prev = plan[plan.length - 1];
+      let i = bag.findIndex(w => !prev || (w.laut !== prev.laut && w !== prev));
+      if (i < 0) i = bag.findIndex(w => w !== prev);
+      if (i < 0) i = 0;
+      plan.push(bag.splice(i, 1)[0]);
+    }
+    return plan;
+  }
+
+  // Falsche Antworten: aus den gewählten Lauten, aber nie einer, den man am Wortanfang auch hört.
+  // Reicht die Auswahl nicht, wird mit früh eingeführten Lauten aufgefüllt.
+  function makeChoices(wort, laute, k) {
+    const verboten = new Set([wort.laut, ...(NICHT_NEBEN[wort.laut] || [])]);
+    const erlaubt = l => !verboten.has(l);
+    let falsch = shuffle(laute.filter(erlaubt)).slice(0, k - 1);
+    if (falsch.length < Math.min(2, k - 1)) {
+      const mehr = LAUTE.filter(l => erlaubt(l) && !falsch.includes(l));
+      falsch = falsch.concat(mehr.slice(0, Math.min(2, k - 1) - falsch.length));
+    }
+    return shuffle([wort.laut, ...falsch]);
+  }
+
+  // ================= Anzeige =================
+  function show(section) {
+    for (const s of ['setup', 'game', 'end', 'stats']) els[s].classList.toggle('hidden', s !== section);
+    window.scrollTo(0, 0);
+  }
+  function renderBeet() {
+    els.beet.innerHTML = state.ergebnis.map((r, i) => {
+      const cls = r === 'ok' ? 'da' : r === 'weg' ? 'weg' : i === state.nr ? 'leer jetzt' : 'leer';
+      return `<span class="${cls}">${KAROTTE}</span>`;
+    }).join('');
+  }
+  function animateHase(cls) {
+    els.hase.classList.remove('hops', 'wackel');
+    void els.hase.offsetWidth;
+    els.hase.classList.add(cls);
+  }
+  function sayWord() {
+    if (!state.task) return;
+    speak(state.task.wort);
+  }
+  els.bild.addEventListener('click', () => { if (state.phase === 'game') sayWord(); });
+  els.hoeren.addEventListener('click', () => { if (state.phase === 'game') sayWord(); });
+
+  // ================= Spielablauf =================
+  function startGame() {
+    const s = readSettings();
+    store.settings = s; saveStore(store);
+    state.settings = s;
+    state.voiceOut = s.speak && canSpeak;
+    Object.assign(state, {
+      phase: 'game', plan: makePlan(s.laute, s.anzahl), nr: 0, task: null, attempts: 0, ok: 0, first: 0,
+      missed: new Map(), ergebnis: new Array(s.anzahl).fill(''), accepting: false
+    });
+    state.timers.forEach(clearTimeout); state.timers = [];
+    els.hoeren.disabled = !state.voiceOut;
+    show('game');
+    unlockAudio();
+    if (state.voiceOut) unlockSpeech();
+    nextTask();
+  }
+
+  function nextTask() {
+    if (state.phase !== 'game') return;
+    if (state.nr >= state.plan.length) { endGame(); return; }
+    const t = state.plan[state.nr];
+    state.task = t; state.attempts = 0;
+    renderBeet();
+    els.bild.classList.remove('neu'); void els.bild.offsetWidth; els.bild.classList.add('neu');
+    els.bildImg.src = t.bild;
+    els.bildImg.alt = state.voiceOut ? '' : t.wort;
+    // Das geschriebene Wort würde den Anlaut verraten, es erscheint erst nach der Antwort.
+    els.frage.textContent = 'Womit fängt das Wort an?';
+    els.feedback.textContent = ''; els.feedback.className = 'feedback';
+    const choices = makeChoices(t, state.settings.laute, state.settings.knoepfe);
+    els.antworten.style.setProperty('--n', choices.length);
+    els.antworten.innerHTML = choices.map(l =>
+      `<button class="antwort" type="button" data-laut="${l}" aria-label="${l}">${lautHTML(l)}</button>`).join('');
+    state.accepting = true;
+    speak(`${t.wort}. Womit fängt ${t.wort} an?`);
+  }
+
+  els.antworten.addEventListener('click', e => {
+    const b = e.target.closest('.antwort');
+    if (b && !b.disabled) answer(b);
+  });
+  document.addEventListener('keydown', e => {
+    if (state.phase !== 'game' || !/^[1-4]$/.test(e.key)) return;
+    const b = els.antworten.children[+e.key - 1];
+    if (b && !b.disabled) { e.preventDefault(); answer(b); }
+  });
+
+  function lautStat(laut, richtig) {
+    const s = store.laute[laut] || (store.laute[laut] = { n: 0, ok: 0 });
+    s.n++; if (richtig) s.ok++;
+  }
+
+  function answer(btn) {
+    if (!state.accepting || state.phase !== 'game') return;
+    const t = state.task;
+    const richtig = btn.dataset.laut === t.laut;
+    if (state.attempts === 0) lautStat(t.laut, richtig);
+    if (richtig) onCorrect(btn); else onWrong(btn);
+  }
+
+  function onCorrect(btn) {
+    const t = state.task;
+    state.accepting = false;
+    cancelSpeech();
+    btn.classList.add('ok');
+    [...els.antworten.children].forEach(b => { b.disabled = true; if (b !== btn) b.classList.add('aus'); });
+    state.ok++;
+    if (state.attempts === 0) state.first++;
+    state.ergebnis[state.nr] = 'ok';
+    state.nr++;
+    renderBeet();
+    animateHase('hops');
+    sndOk();
+    els.feedback.className = 'feedback ok';
+    els.feedback.innerHTML = `${pick(['Richtig!', 'Super!', 'Klasse!', 'Genau!', 'Spitze!', 'Prima!'])} <span class="wort">${wortHTML(t)}</span> fängt mit ${t.laut} an.`;
+    speak(`Richtig! ${t.wort}.`, () => later(nextTask, 500));
+  }
+
+  function onWrong(btn) {
+    const t = state.task;
+    state.attempts++;
+    btn.classList.add('bad'); btn.disabled = true;
+    animateHase('wackel');
+    sndBad();
+    if (state.attempts < 2) {
+      els.feedback.className = 'feedback bad';
+      els.feedback.textContent = 'Hör nochmal genau hin!';
+      speak(`Hör nochmal genau hin: ${t.wort}.`);
+      return;
+    }
+    // Zweiter Fehler: Lösung zeigen, das Wort kommt später in der Runde noch einmal.
+    state.accepting = false;
+    [...els.antworten.children].forEach(b => {
+      b.disabled = true;
+      if (b.dataset.laut === t.laut) b.classList.add('loesung'); else if (!b.classList.contains('bad')) b.classList.add('aus');
+    });
+    state.missed.set(t.wort, t);
+    state.ergebnis[state.nr] = 'weg';
+    const rest = state.plan.length - state.nr - 1;
+    if (rest >= 2) state.plan[state.nr + Math.min(3, rest)] = t;   // ersetzt ein späteres Bild
+    state.nr++;
+    renderBeet();
+    els.feedback.className = 'feedback bad';
+    els.feedback.innerHTML = `<span class="wort">${wortHTML(t)}</span> fängt mit ${t.laut} an.`;
+    speak(`${t.wort} fängt mit ${t.laut} an.`, () => later(nextTask, state.voiceOut ? 900 : 2200));
+  }
+
+  function endGame() {
+    if (state.phase !== 'game') return;
+    state.phase = 'end';
+    state.accepting = false;
+    cancelSpeech();
+    state.timers.forEach(clearTimeout); state.timers = [];
+    const gespielt = state.ergebnis.filter(Boolean).length;
+    store.total += state.ok;
+    store.last = { ok: state.ok, all: gespielt, first: state.first };
+    saveStore(store);
+
+    els.endCount.textContent = state.ok;
+    els.endUnter.textContent = state.ok === 1 ? 'Karotte geerntet!' : 'Karotten geerntet!';
+    els.endRecord.classList.toggle('hidden', !(gespielt > 0 && state.first === gespielt));
+    els.ueben.innerHTML = [...state.missed.values()]
+      .map(w => `<figure><img src="${w.bild}" alt=""><figcaption>${wortHTML(w)}</figcaption></figure>`).join('');
+    els.uebenCard.classList.toggle('hidden', state.missed.size === 0);
+    show('end');
+    sndEnd();
+    speak(state.ok === 1 ? 'Du hast eine Karotte geerntet!' : `Super! Du hast ${state.ok} Karotten geerntet!`);
+  }
+
+  // ================= Statistik =================
+  function renderStats() {
+    const last = store.last;
+    els.lastCard.classList.toggle('hidden', !last);
+    if (last) {
+      els.lastOk.textContent = last.ok;
+      els.lastAll.textContent = last.all;
+      els.lastFirst.textContent = last.first;
+    }
+    els.statTotal.textContent = store.total;
+    const gespielt = LAUTE.filter(l => store.laute[l] && store.laute[l].n > 0);
+    els.noQuoten.classList.toggle('hidden', gespielt.length > 0);
+    els.quoten.innerHTML = gespielt.map(l => {
+      const { n, ok } = store.laute[l];
+      const p = Math.round(ok / n * 100);
+      const cls = p >= 80 ? '' : p >= 50 ? 'mittel' : 'schwach';
+      return `<li><span class="laut">${l} ${klein(l)}</span><span class="balken"><i class="${cls}" style="width:${p}%"></i></span><small>${ok} von ${n}</small></li>`;
+    }).join('');
+  }
+  function openStats() { renderStats(); show('stats'); }
+  function closeStats() { show(state.phase === 'end' ? 'end' : 'setup'); }
+  $('statsBtnSetup').addEventListener('click', openStats);
+  $('statsBtnEnd').addEventListener('click', openStats);
+  $('statsBack').addEventListener('click', closeStats);
+  $('statsBack2').addEventListener('click', closeStats);
+  // Löschen erst beim zweiten Tipp
+  $('resetBtn').addEventListener('click', e => {
+    const b = e.currentTarget;
+    if (!b.dataset.sicher) {
+      b.dataset.sicher = '1'; b.textContent = 'Wirklich alles löschen? Nochmal tippen.';
+      setTimeout(() => { delete b.dataset.sicher; b.textContent = 'Statistik löschen'; }, 4000);
+      return;
+    }
+    store.total = 0; store.laute = {}; delete store.last;
+    saveStore(store);
+    renderStats();
+  });
+
+  $('startBtn').addEventListener('click', startGame);
+  $('againBtn').addEventListener('click', () => { applySettings(store.settings); startGame(); });
+  $('setupBtn').addEventListener('click', () => { cancelSpeech(); state.phase = 'setup'; show('setup'); });
+  $('stopBtn').addEventListener('click', endGame);
+
+  // Für Tests in der Konsole
+  window.__anlaute = { LAUTE, WOERTER, NICHT_NEBEN, KOENIGE, makePlan, makeChoices, state, endGame };
+})();
+</script>
+</body>
+</html>

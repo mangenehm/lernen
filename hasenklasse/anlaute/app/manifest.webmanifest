@@ -1,0 +1,39 @@
+{
+  "name": "Was hört der Hase?",
+  "short_name": "Anlaute",
+  "description": "Anlaute hören und den Anfangslaut finden – passend zur Zebra-Schreibtabelle",
+  "lang": "de",
+  "id": "/hasenklasse/anlaute/",
+  "start_url": "/hasenklasse/anlaute/",
+  "scope": "/hasenklasse/anlaute/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#fbf3e2",
+  "theme_color": "#fbf3e2",
+  "icons": [
+    {
+      "src": "/hasenklasse/anlaute/app/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/hasenklasse/anlaute/app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/hasenklasse/anlaute/app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/hasenklasse/anlaute/app/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
