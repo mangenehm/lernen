@@ -7,14 +7,24 @@ Die Startseite ist eine gemeinsame Übersicht aller Spiele, gruppiert nach Klass
 | Klasse | Spiel | Pfad | Beschreibung |
 |---|---|---|---|
 | Erdmännchenklasse | Guten Morgen, Erdmännchen! | `/erdmaennchenklasse/guten-morgen/` | Plus/Minus bis 100, Einmaleins und Einsdurcheins – Aufgaben werden vorgelesen und per Sprache beantwortet. |
-| Hasenklasse | – | – | Noch keine Spiele. |
+| Hasenklasse | Was hört der Hase? | `/hasenklasse/anlaute/` | Anlaute nach der Zebra-Schreibtabelle: Bild ansehen, Wort hören, Anfangslaut antippen. Laute in Zebra-Reihenfolge auswählbar. |
 
 ## Neues Spiel hinzufügen
 
 1. Spiel als `/<klasse>/<spiel>/index.html` anlegen (z. B. `/hasenklasse/karotten/`).
-2. In `index.html` eine Karte im Abschnitt der passenden Klasse eintragen (bei der Hasenklasse die „Bald geht's los“-Karte ersetzen).
+2. In `index.html` eine Karte im Abschnitt der passenden Klasse eintragen.
 3. Eigene App dazu anlegen (siehe unten): `node tools/app-anlegen.mjs hasenklasse/karotten "Karotten zählen" "Karotten"`
 4. Tabelle oben ergänzen.
+
+## Was hört der Hase? (Anlaute)
+
+Das Spiel richtet sich nach der Zebra-Schreibtabelle (Klett):
+
+- Laute statt Buchstaben: Ei, Au, Eu, Sch, Sp, St, Pf und Qu sind eigene Antworten (*Eimer* → Ei, *Schaf* → Sch). Laute, die nur im Wortinneren vorkommen (ch, ng, ck, tz, ie, ß, äu), und V, C, X, Y kommen nicht vor.
+- Selbstlaute („Könige“) tragen eine Krone und kommen mit langem und kurzem Anlaut vor (*Esel*, *Ente*). Beim I gibt es nur kurze Anlaute, kein *Igel*.
+- Falsche Antworten sind nie Laute, die man am Wortanfang ebenfalls hört (z. B. kein S neben *Stern*, kein E neben *Äpfel*). Die Regeln stehen in `NICHT_NEBEN`.
+- Die Auswahl der Laute folgt der Reihenfolge im Buchstabenheft; „Bis hier“ wählt alle Laute bis zum angetippten.
+- Wörter und Laute stehen in `WOERTER` in der Spielseite, die Bilder als `assets/art/anlaute/<wort>.svg` (Umlaute als ae/oe/ue, ß als ss). Neue Bilder auch in `sw.js` eintragen.
 
 ## Gestaltung und Grafiken
 
