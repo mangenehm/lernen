@@ -613,7 +613,10 @@
   let deVoice = null, speakId = 0, speakDone = null;
   function chooseVoice() {
     if (!canSpeak) return;
-    const voices = speechSynthesis.getVoices().filter(v => /^de(-|_|$)/i.test(v.lang));
+    // Netzwerk-Stimmen (Android) werden gestreamt und stocken leicht – nur als Notlösung
+    const net = v => /network/i.test(v.name);
+    const voices = speechSynthesis.getVoices().filter(v => /^de(-|_|$)/i.test(v.lang))
+      .sort((a, b) => net(a) - net(b));
     deVoice = voices.find(v => /de-DE/i.test(v.lang) && v.localService) || voices.find(v => /de-DE/i.test(v.lang)) || voices[0] || null;
   }
   if (canSpeak) { chooseVoice(); speechSynthesis.onvoiceschanged = chooseVoice; }
@@ -635,6 +638,16 @@
     u.volume = 0;
     speechSynthesis.speak(u);
   }
+  // Ton und Sprachausgabe schon beim ersten Tippen auf der Seite aufwecken, damit die
+  // Sprach-Engine (Android) beim ersten Satz der Runde bereit ist und nichts verschluckt.
+  let warmedUp = false;
+  function warmUp() {
+    if (warmedUp) return;
+    warmedUp = true;
+    unlockAudio();
+    unlockSpeech();
+  }
+  for (const ev of ['click', 'keydown']) document.addEventListener(ev, warmUp, { capture: true });
   function speak(text, cb) {
     const id = ++speakId;
     speakDone = null;
@@ -646,7 +659,8 @@
       if (cb) cb();
     };
     if (!state.voiceOut || !canSpeak) { setTimeout(done, 0); return; }
-    speechSynthesis.cancel();
+    const busy = speechSynthesis.speaking || speechSynthesis.pending;
+    if (busy) speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'de-DE'; u.rate = .95;
     if (deVoice) u.voice = deVoice;
@@ -654,15 +668,17 @@
     guard = setTimeout(done, 2500 + text.length * 110);   // falls onend nie kommt
     speakDone = done;
     setMic('speak', '');
-    speechSynthesis.speak(u);
+    // Folgt speak() direkt auf cancel(), verschluckt Chrome gern den Satzanfang
+    if (busy) setTimeout(() => { if (!finished && id === speakId) speechSynthesis.speak(u); }, 80);
+    else speechSynthesis.speak(u);
   }
 
   // ================= Spracherkennung =================
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let rec = null, recGen = 0, interimTimer = null, recErrors = 0;
+  let rec = null, recGen = 0, interimTimer = null, recErrors = 0, recReady = false;
 
   function stopListening() {
-    recGen++;
+    recGen++; recReady = false;
     clearTimeout(interimTimer);
     if (rec) { try { rec.abort(); } catch { /* egal */ } rec = null; }
   }
@@ -672,7 +688,11 @@
     const gen = ++recGen;
     const r = new SR();
     r.lang = 'de-DE'; r.interimResults = true; r.maxAlternatives = 5; r.continuous = false;
-    r.onresult = e => { if (gen === recGen) { recErrors = 0; handleSpeech(e); } };
+    // „Ich höre zu“ erst zeigen, wenn das Mikro wirklich aufnimmt (Android braucht dafür bis zu 1 s)
+    const ready = () => { if (gen === recGen && !recReady) { recReady = true; setStatus(); } };
+    r.onaudiostart = ready;
+    setTimeout(ready, 1500);   // falls audiostart nie kommt
+    r.onresult = e => { if (gen === recGen) { ready(); recErrors = 0; handleSpeech(e); } };
     r.onerror = e => {
       if (gen !== recGen) return;
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
@@ -684,7 +704,7 @@
     r.onend = () => {
       if (gen !== recGen) return;
       rec = null;
-      setTimeout(() => { if (gen === recGen && state.accepting && state.listening) startListening(); }, 250);
+      setTimeout(() => { if (gen === recGen && state.accepting && state.listening) startListening(); }, 0);
     };
     try { r.start(); rec = r; state.listening = true; setStatus('listening'); } catch { /* läuft schon */ }
   }
@@ -705,10 +725,13 @@
     els.heard.textContent = alts[0] ? `Gehört: „${alts[0].trim()}“` : '';
     const parsed = alts.map(parseAnswer);
     clearTimeout(interimTimer);
-    if (parsed.some(p => p.num === state.task.answer)) {
-      // Bei Zwischenergebnissen kurz warten – aus "sechs…" kann noch "sechsundfünfzig" werden.
-      if (res.isFinal) submit(state.task.answer);
-      else interimTimer = setTimeout(() => submit(state.task.answer), 700);
+    const ans = state.task.answer;
+    if (parsed.some(p => p.num === ans)) {
+      // Nur 1–9 können noch länger werden ("sechs…" -> "sechsundfünfzig"), dann kurz warten.
+      // Ebenso, wenn die Antwort die erste Zahl der Aufgabe ist (Kind wiederholt die Aufgabe).
+      const sure = res.isFinal || ((ans === 0 || ans >= 10) && ans !== state.task.a);
+      if (sure) submit(ans);
+      else interimTimer = setTimeout(() => submit(ans), 400);
       return;
     }
     if (!res.isFinal) return;
@@ -850,7 +873,7 @@
   function setStatus() {
     if (speakDone) { setMic('speak', ''); return; }   // während des Vorlesens bleibt der Lautsprecher blau
     if (!state.accepting) { setMic('', ''); return; }
-    if (state.voiceIn && rec) setMic('listen', 'Ich höre zu … sag die Antwort!');
+    if (state.voiceIn && rec && recReady) setMic('listen', 'Ich höre zu … sag die Antwort!');
     else if (state.voiceIn && SR) setMic('', 'Gleich höre ich zu …');
     else setMic('', 'Tippe die Antwort ein.');
   }
@@ -955,9 +978,9 @@
     showKeypad(!state.voiceIn);
     renderExpr();
     show('game');
-    // Ton und Sprachausgabe noch im Klick freischalten (iOS)
+    // Ton und Sprachausgabe noch im Klick freischalten (iOS) – meist schon beim ersten Tippen geschehen
+    warmUp();
     unlockAudio();
-    if (state.voiceOut) unlockSpeech();
     updateToggles();
 
     const go = () => {
@@ -988,7 +1011,6 @@
     if (!canSpeak) return;
     state.voiceOut = !state.voiceOut;
     if (state.voiceOut) {
-      unlockSpeech();
       // Gleich die aktuelle Aufgabe vorlesen, damit man hört, dass es an ist
       if (state.accepting && state.task) {
         stopListening(); state.listening = false;
